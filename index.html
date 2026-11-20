@@ -599,10 +599,20 @@ function calibrate(ps){
 }
 function center(ps){let c=[0,0,0];for(const p of ps)for(let j=0;j<3;j++)c[j]+=p.pos[j]/ps.length;return c}
 function dropSignal(ps){
- const shell=ps.filter(p=>p.shell),baseCenter=center(shell),vals=[];
- for(const p of shell){const bx=p.basePos[0]-baseCenter[0],by=p.basePos[1]-baseCenter[1],bz=p.basePos[2]-baseCenter[2],br=Math.hypot(bx,by,bz),x=p.pos[0]-baseCenter[0],y=p.pos[1]-baseCenter[1],z=p.pos[2]-baseCenter[2],r=Math.hypot(x,y,z);if(br<1e-7)continue;const mu=by/br,P2=.5*(3*mu*mu-1);vals.push([r-br,P2]);}
- let num=0,den=0;for(const [dr,p2] of vals){num+=dr*p2;den+=p2*p2;}
- return num/(den||1);
+ const shell=ps.filter(p=>p.shell);if(shell.length<8)return NaN;
+ const baseCenter=[0,0,0],currentCenter=center(shell);for(const p of shell)for(let j=0;j<3;j++)baseCenter[j]+=p.basePos[j]/shell.length;
+ let num=0,den=0;for(const p of shell){const bx=p.basePos[0]-baseCenter[0],by=p.basePos[1]-baseCenter[1],bz=p.basePos[2]-baseCenter[2],br=Math.hypot(bx,by,bz);if(br<1e-7)continue;const r=Math.hypot(...p.pos.map((v,j)=>v-currentCenter[j])),P2=.5*(3*(by/br)**2-1);num+=(r-br)*P2;den+=P2*P2;}
+ return den>1e-10?num/den:NaN;
+}
+function dropFrequency(arr,dt){
+ if(arr.length<100||!arr.every(Number.isFinite))return {frequency:null,reason:'insufficient_or_nonfinite'};
+ const amp=Math.max(...arr)-Math.min(...arr);if(amp<1e-6)return {frequency:null,reason:'no_signal'};
+ const n=arr.length,mean=arr.reduce((s,v)=>s+v,0)/n;const dead=.05*amp,crossings=[];let side=0,lastNeg=-1;
+ for(let i=0;i<n;i++){const v=arr[i]-mean;if(v<-dead){side=-1;lastNeg=i;}else if(v>dead&&side===-1){let j=lastNeg;while(j+1<i&&arr[j+1]<mean)j++;const d=arr[j+1]-arr[j];crossings.push((j+(d? (mean-arr[j])/d:0))*dt);side=1;}}
+ if(crossings.length<3)return {frequency:null,reason:'fewer_than_two_complete_cycles',crossings:crossings.length};
+ const periods=crossings.slice(1).map((t,i)=>t-crossings[i]),avg=periods.reduce((s,v)=>s+v,0)/periods.length,spread=Math.max(...periods.map(v=>Math.abs(v-avg)/avg));
+ if(!(avg>0)||spread>.25)return {frequency:null,reason:'inconsistent_periods',crossings:crossings.length};
+ return {frequency:1/avg,reason:'period_estimate',crossings:crossings.length};
 }
 function waveSignal(ps,L){
  const groups=new Map();for(const p of ps){if(!p.topLayer)continue;const k=p.x0.toFixed(4);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(p);}
@@ -690,7 +700,7 @@ function runCase(mode,seed,spacing,dt){
   const sigma=sigmaFromPairPotential(spacing),theory=theoretical(mode,spacing);
   const result={mode,seed,spacing,dt,steps:times.length,relaxSteps,particles:ps.length,shellCount:ps.filter(p=>p.shell).length,theoryValue:theory,sigmaEffectiveEstimate:sigma,meanDensityError:density/Math.max(1,times.length),maxDensityError:maxDensity,maxStepMs,finite,signalRange:Math.max(...series)-Math.min(...series),signalStart:series[0],signalEnd:series.at(-1),maxDisplacement:Math.max(...ps.map(p=>Math.hypot(p.pos[0]-p.basePos[0],p.pos[1]-p.basePos[1],p.pos[2]-p.basePos[2]))),maxSpeed:Math.max(...ps.map(p=>Math.hypot(...p.vel)))};
   if(mode==='drop'){
-   const measured=fftPeak(series,dt,.12,3.5);result.measuredFrequency=measured;result.relativeError=measured&&theory?Math.abs(measured-theory)/theory:null;
+   const m=dropFrequency(series,dt);result.measuredFrequency=m.frequency;result.measurementStatus=m.reason;result.crossings=m.crossings??0;result.theoryDiagnosticOnly=theory;result.theoryValue=null;result.relativeError=null;result.theoryStatus='uncalibrated_runtime_CSF';
   }else if(mode==='wave'){
    const measured=fftPeak(series,dt,.12,3.5);result.measuredFrequency=measured;result.relativeError=measured&&theory?Math.abs(measured-theory)/theory:null;result.amplitudeStart=series[0];result.amplitudeEnd=series.at(-1);
   }else{
@@ -752,7 +762,7 @@ function render(r){
 $('v09quick').onclick=()=>runSuite(false);
 $('v09full').onclick=()=>runSuite(true);
 $('v09export').onclick=()=>{if(!last){$('v09status').textContent='请先运行实验。';return;}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(last,null,2)],{type:'application/json'}));a.download='afg-v09-production-pbf-convergence.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
-window.AFG=window.AFG||{};AFG.runV09=runSuite;AFG.runV09Case=runCase;AFG.v09Report=()=>last;
+window.AFG=window.AFG||{};AFG.runV09=runSuite;AFG.runV09Case=runCase;AFG.v09Report=()=>last;AFG.v09DropDiagnostics={dropSignal,dropFrequency};
 })();
 </script>
 </body></html>

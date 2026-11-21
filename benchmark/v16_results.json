@@ -14,7 +14,8 @@
       "warmStartHits": 1,
       "warmStartApplied": 1,
       "cacheExpiry": true,
-      "finiteState": true
+      "finiteState": true,
+      "normalSupportLossClearsFriction": true
     },
     "adaptiveIterations": {
       "passed": true,

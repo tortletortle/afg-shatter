@@ -27,4 +27,4 @@ V0.16 暂停扩充物件，集中降低重复接触求解成本。保留 V0.15 �
 ## 验证边界与限制
 V0.16 的新基准使用从生产页面抽取的物理函数和确定性数学/材质 stub；迭代次数减少不等同于浏览器帧时间按同等比例下降。完整页面浏览器启动、真实 Windows、手机 GPU、WebGL2、触摸交互和真实场景性能尚未验收。转动惯量仍是标量球形近似，PBF / CSF 精度仍未通过完整物理基准。
 
-详细结果见 `VALIDATION.md` 与 `benchmark/v16_results.json`。
+可重复执行：`node tests/v16_warm_start_harness.js`（Node.js 22）。GitHub Actions 自动验收已通过。详细结果见 `VALIDATION.md` 与 `benchmark/v16_results.json`。

@@ -1,11 +1,14 @@
-# V0.16 算法测试
+# V0.17 接触岛预算测试
 
-本轮测试从 `index.html` 与 `compat.html` 抽取生产物理函数，在确定性 V8 harness 中运行，不启动完整页面。两个构建的 6 个内联脚本块均通过语法编译。
+运行：
+`node tests/v17_island_budget_harness.js`
 
-- `v16WarmStartTests()`：缓存建立、反向刚体顺序匹配、冲量复用与缓存过期。
-- `v16IterationPolicyTests()`：2 / 4 / 6 / 8 轮自适应策略边界。
-- `v16RestingContactBenchmark()`：调用生产 `v15GroundResolve`，执行 360 步四点地面接触，对比热启动与冷启动的迭代工作量、穿透和接触后速度。
+测试脚本会：
+- 检查 `index.html` 与 `compat.html` 各 6 个内联脚本块的语法。
+- 从两个构建抽取同一生产调度器函数。
+- 执行预算守恒、有限服务槽、单岛预算和等待时间防饥饿单元测试。
+- 对 100 / 300 / 500 / 1000 个合成碎片构造连通图，检查接触岛预算分配不超出 900。
+- 检查 WebGL 与 Canvas2D 两个构建的规模结果一致。
 
-Warm Start、迭代策略与 360 步地面接触基准在两个构建中结果一致。本地执行命令：`node tests/v16_warm_start_harness.js`（Node.js 22）。GitHub Actions 工作流也会在该分支 push 时自动执行。
-
-结果与测试边界记录在 `VALIDATION.md` 和 `benchmark/v16_results.json`。这些测试不替代浏览器启动、真实设备和 GPU 实机验收。
+本测试只验证调度算法和合成图规模，不模拟真实刚体几何、物理积分、GPU 或浏览器帧耗时。V0.16 的回归测试仍需执行：
+`node tests/v16_warm_start_harness.js`

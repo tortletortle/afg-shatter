@@ -3,7 +3,7 @@
 ## V0.16 测试边界
 - 运行方式：从生产页面抽取物理函数，在确定性 V8 harness 中执行；数学与材质对象使用显式 stub。
 - `index.html` 与 `compat.html` 两个构建各有 6 个内联 JavaScript 脚本块，均通过语法编译检查。
-- 可复现脚本：`node tests/v16_warm_start_harness.js`；GitHub Actions Node.js 22 工作流 run #2（2026-11-21）通过。
+- 可复现脚本：`node tests/v16_warm_start_harness.js`；GitHub Actions Node.js 22 工作流 run #6（2026-11-21，当前分支最新提交）通过。
 - 不是完整页面浏览器启动，不是实体 Windows、手机 GPU、WebGL2 或触摸实机测试。
 - 迭代次数与物理稳定性是本轮测量对象；没有据此宣称浏览器帧时间同比下降。
 

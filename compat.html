@@ -595,7 +595,7 @@ function v17ScaleBenchmark(sizes=[100,300,500,1000],trials=5){
    finite:[...buildSamples,...selectionSamples,...scheduleSamples].every(Number.isFinite)
   });
  }
- return {pass:reports.length===sizes.length&&reports.every(r=>r.retainedCandidates<=V17_MAX_CANDIDATES&&r.candidatePool>=r.retainedCandidates&&r.scheduledPairs<=V17_MAX_NARROW_TESTS&&r.budgetAllocated<=V17_MAX_NARROW_TESTS&&r.maxPairBudget<=V17_MAX_PAIR_TESTS&&r.finite),budgetUnits:'GJK convex-cell tests per simulation step',fixedBudget:V17_MAX_NARROW_TESTS,candidateCap:V17_MAX_CANDIDATES,perBodyCandidateCap:V17_MAX_CANDIDATES_PER_BODY,maxPairBudget:V17_MAX_PAIR_TESTS,trials,reports,interpretation:'Synthetic dense candidate-generation and island-diverse scheduler benchmark. It is not a full rigid-body simulation or browser FPS benchmark.'};
+ return {pass:reports.length===sizes.length&&reports.every(r=>r.retainedCandidates<=V17_MAX_CANDIDATES&&r.candidatePool>=r.retainedCandidates&&r.bodyCoverage===r.bodies&&r.candidateIslands>=1&&r.scheduledPairs<=V17_MAX_NARROW_TESTS&&r.budgetAllocated<=V17_MAX_NARROW_TESTS&&r.maxPairBudget<=V17_MAX_PAIR_TESTS&&r.finite),budgetUnits:'GJK convex-cell tests per simulation step',fixedBudget:V17_MAX_NARROW_TESTS,candidateCap:V17_MAX_CANDIDATES,perBodyCandidateCap:V17_MAX_CANDIDATES_PER_BODY,maxPairBudget:V17_MAX_PAIR_TESTS,trials,reports,interpretation:'Synthetic dense candidate-generation and island-diverse scheduler benchmark. It is not a full rigid-body simulation or browser FPS benchmark.'};
 }
 
 function v15GroundResolve(b,dt,cache=null,frame=0){

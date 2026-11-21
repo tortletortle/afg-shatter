@@ -43,7 +43,7 @@ function between(source, start, end, file) {
 }
 
 function compileInlineScripts(html, file) {
- const blocks = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+ const blocks = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
  assert.equal(blocks.length, 6, `${file}: expected 6 inline script blocks`);
  for (let i = 0; i < blocks.length; i++) {
   try { new Function(blocks[i][1]); }

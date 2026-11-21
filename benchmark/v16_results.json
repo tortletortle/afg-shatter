@@ -4,7 +4,8 @@
     "runtime": "V8 functions.exec isolated harness",
     "method": "Production solver and ground resolver functions extracted from index.html; deterministic vector/quaternion/material stubs",
     "browserSmokeTest": "not run",
-    "deviceAndGpuTests": "not run"
+    "deviceAndGpuTests": "not run",
+    "compatBuildParity": "index.html and compat.html both pass the same extracted-function tests"
   },
   "results": {
     "warmStart": {
@@ -50,7 +51,9 @@
     "syntax": {
       "inlineScriptBlocks": 6,
       "compiled": 6,
-      "errors": 0
+      "errors": 0,
+      "compatInlineScriptBlocks": 6,
+      "compatCompiled": 6
     }
   },
   "limitations": [

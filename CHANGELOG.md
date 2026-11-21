@@ -3,7 +3,7 @@
 ## V0.16 — Persistent Contact Warm Starting
 - Add a persistent contact cache keyed by rigid-body ID pairs.
 - Match contacts one-to-one using local-space anchors and local-space normals in a canonical body frame.
-- Warm-start accumulated normal and tangential impulses; reproject cached friction impulses onto the current contact plane and clamp to the Coulomb limit.
+- Warm-start accumulated normal and tangential impulses; reproject cached friction impulses onto the current contact plane, clamp to the Coulomb limit, and remove stale friction when normal support vanishes.
 - Add cache expiry (3 unseen simulation steps) and a 4096-pair capacity limit.
 - Add adaptive sequential-impulse iteration counts: 2 / 4 / 6 / 8 according to warm-start coverage, approach speed and penetration depth.
 - Apply warm starting and adaptive iterations to multi-point ground contacts.

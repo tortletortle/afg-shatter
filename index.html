@@ -451,7 +451,7 @@ function v16ChooseIterations(states,warmHits){
  const approach=states.reduce((m,s)=>Math.max(m,Math.max(0,-s.bounceVn)),0);
  const depth=states.reduce((m,s)=>Math.max(m,s.depth),0),ratio=warmHits/Math.max(1,states.length);
  if(approach>2.4||depth>.12)return 8;
- if(ratio>=.65&&approach<.28&&depth<.025)return 2;
+ if(ratio>=.65&&approach<.28&&depth<.04)return 2;
  if(ratio>=.35&&approach<.75&&depth<.06)return 4;
  return 6;
 }

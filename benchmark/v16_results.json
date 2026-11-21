@@ -5,7 +5,15 @@
     "method": "Production solver and ground resolver functions extracted from index.html; deterministic vector/quaternion/material stubs",
     "browserSmokeTest": "not run",
     "deviceAndGpuTests": "not run",
-    "compatBuildParity": "index.html and compat.html both pass the same extracted-function tests"
+    "compatBuildParity": "index.html and compat.html both pass the same extracted-function tests",
+    "githubActions": {
+      "workflow": ".github/workflows/v16-validation.yml",
+      "runId": 44890971485,
+      "runNumber": 2,
+      "conclusion": "success",
+      "nodeVersion": 22,
+      "date": "2026-11-21"
+    }
   },
   "results": {
     "warmStart": {

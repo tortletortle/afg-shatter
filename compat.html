@@ -254,7 +254,7 @@ function v17AllocateIslandBudgets(pairs,budget,frame){
   const priority=Math.max(...items.map(p=>p.score)),weight=Math.sqrt(items.length)*(1+Math.min(2,priority/4))*(1+starvation*.035);
   islands.push({key,ids,pairs:items,priority,starvation,weight,allocation:0});
  }
- islands.sort((a,b)=>(b.priority+b.starvation*.12)-(a.priority+a.starvation*.12)||a.key.localeCompare(b.key));
+ islands.sort((a,b)=>(b.priority+b.starvation*.35)-(a.priority+a.starvation*.35)||a.key.localeCompare(b.key));
  const cap=Math.max(0,Math.floor(budget)),base=Math.min(1,cap/Math.max(1,islands.length));
  let left=cap;
  if(base>=1){for(const island of islands){island.allocation=1;left--;}}
@@ -264,7 +264,7 @@ function v17AllocateIslandBudgets(pairs,budget,frame){
   let used=islands.reduce((n,x)=>n+x.allocation,0);
   for(const island of [...islands].sort((a,b)=>(b.remainder||0)-(a.remainder||0)||a.key.localeCompare(b.key))){if(used>=cap)break;island.allocation++;used++;}
  }
- for(const island of islands)v17IslandServiceState.set(island.key,{lastFrame:frame});
+ for(const island of islands){if(island.allocation>0)v17IslandServiceState.set(island.key,{lastFrame:frame});else if(!v17IslandServiceState.has(island.key))v17IslandServiceState.set(island.key,{lastFrame:frame});}
  for(const [key,value] of v17IslandServiceState)if(frame-value.lastFrame>V17_SERVICE_TTL)v17IslandServiceState.delete(key);
  return islands;
 }
@@ -276,8 +276,12 @@ function v17ScheduleTests(){
  const repeated=Array.from({length:8},(_,i)=>make(100+i,8-i));
  const limited=v17AllocateIslandBudgets(repeated,3,2),limitedSum=limited.reduce((n,x)=>n+x.allocation,0),top3=limited.slice(0,3).every(x=>x.allocation>0);
  const oneIsland=v17AllocateIslandBudgets([make(1,4),make(1,3),make(1,2)],9,3);
- const pass=sum===17&&allServed&&limitedSum===3&&top3&&oneIsland.length===1&&oneIsland[0].allocation===9&&first.every(x=>Number.isFinite(x.weight)&&x.weight>0);
- return {pass,isolatedIslands:first.length,totalBudget:sum,allIslandsServed:allServed,constrainedBudget:limitedSum,constrainedServed:limited.filter(x=>x.allocation>0).length,oneIslandBudget:oneIsland[0].allocation};
+ const fairBodies=new Map(),fairBody=id=>{if(!fairBodies.has(id))fairBodies.set(id,{id});return fairBodies.get(id);},fairPairs=Array.from({length:4},(_,i)=>({a:fairBody(500+i*2),b:fairBody(501+i*2),score:10-i*3})),served=new Map(fairPairs.map(p=>[p.a.id,0]));
+ v17IslandServiceState=new Map();
+ for(let frame=1;frame<=32;frame++){for(const island of v17AllocateIslandBudgets(fairPairs,1,frame))if(island.allocation>0)served.set(island.ids[0],(served.get(island.ids[0])||0)+1);}
+ const starvationFairness=[...served.values()].every(n=>n>0);
+ const pass=sum===17&&allServed&&limitedSum===3&&top3&&oneIsland.length===1&&oneIsland[0].allocation===9&&first.every(x=>Number.isFinite(x.weight)&&x.weight>0)&&starvationFairness;
+ return {pass,isolatedIslands:first.length,totalBudget:sum,allIslandsServed:allServed,constrainedBudget:limitedSum,constrainedServed:limited.filter(x=>x.allocation>0).length,oneIslandBudget:oneIsland[0].allocation,starvationFairness,servedCounts:[...served.values()]};
 }
 function v15AdaptBudget(narrowphaseMs,tests=0,fallbacks=0){
  const st=v15BudgetState,ms=Math.max(0,Number(narrowphaseMs)||0);

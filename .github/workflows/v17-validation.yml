@@ -1,0 +1,21 @@
+name: V0.17 fixed-budget scheduler validation
+
+on:
+  push:
+    branches:
+      - v0.17-fixed-budget-scheduler
+
+jobs:
+  physics-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run V0.16 regression and V0.17 scalability harness
+        run: |
+          node tests/v16_warm_start_harness.js
+          node tests/v17_scalability_harness.js

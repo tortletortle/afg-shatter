@@ -1,0 +1,75 @@
+{
+  "version": "AFG Shatter V0.17",
+  "method": "Deterministic synthetic connected-fragment graph; extracted production scheduler; no physical collision simulation.",
+  "globalBudget": 900,
+  "builds": [
+    "index.html",
+    "compat.html"
+  ],
+  "syntax": {
+    "inlineScriptBlocksPerBuild": 6,
+    "compiledPerBuild": 6
+  },
+  "schedulerUnitTests": {
+    "pass": true,
+    "totalBudgetConserved": true,
+    "serviceSlotsWhenBudgetLimited": true,
+    "singleIslandReceivesFullBudget": true,
+    "starvationAging": true,
+    "starvationTestFrames": 32,
+    "starvationTestIslandServiceCounts": [
+      24,
+      4,
+      2,
+      2
+    ]
+  },
+  "scales": [
+    {
+      "fragments": 100,
+      "candidateEdges": 87,
+      "islands": 13,
+      "allocatedBudget": 900,
+      "servedIslands": 13,
+      "minIslandBudget": 48,
+      "maxIslandBudget": 73
+    },
+    {
+      "fragments": 300,
+      "candidateEdges": 262,
+      "islands": 38,
+      "allocatedBudget": 900,
+      "servedIslands": 38,
+      "minIslandBudget": 16,
+      "maxIslandBudget": 25
+    },
+    {
+      "fragments": 500,
+      "candidateEdges": 437,
+      "islands": 63,
+      "allocatedBudget": 900,
+      "servedIslands": 63,
+      "minIslandBudget": 9,
+      "maxIslandBudget": 15
+    },
+    {
+      "fragments": 1000,
+      "candidateEdges": 875,
+      "islands": 125,
+      "allocatedBudget": 900,
+      "servedIslands": 125,
+      "minIslandBudget": 7,
+      "maxIslandBudget": 8
+    }
+  ],
+  "parity": "Both builds returned identical results.",
+  "runtimeLimits": {
+    "maxBodies": 100,
+    "maxCells": 180
+  },
+  "limitations": [
+    "Scale data is scheduler-only synthetic evidence, not 1000-body physical simulation.",
+    "No browser frame-time or FPS result is claimed.",
+    "P95/P99 timing metrics are instrumented but require real-device measurements."
+  ]
+}

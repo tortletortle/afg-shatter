@@ -1,5 +1,14 @@
 # Changelog
 
+## V0.16 — Persistent Contact Warm Starting
+- Add a persistent contact cache keyed by rigid-body ID pairs.
+- Match contacts one-to-one using local-space anchors and local-space normals in a canonical body frame.
+- Warm-start accumulated normal and tangential impulses; reproject cached friction impulses onto the current contact plane and clamp to the Coulomb limit.
+- Add cache expiry (3 unseen simulation steps) and a 4096-pair capacity limit.
+- Add adaptive sequential-impulse iteration counts: 2 / 4 / 6 / 8 according to warm-start coverage, approach speed and penetration depth.
+- Apply warm starting and adaptive iterations to multi-point ground contacts.
+- Add warm-start hit, applied-impulse, cache-size and average-iteration telemetry.
+
 ## V0.15 — Multi-point Contact & Friction Solver
 - Add reference/incident face clipping after GJK/EPA to build multi-point contact manifolds.
 - Add six-iteration sequential impulses with accumulated normal and Coulomb friction impulses.

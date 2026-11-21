@@ -28,3 +28,5 @@ V0.18 塑性 harness 从 index.html 与 compat.html 抽取生产函数，检查�
 - V0.17 scalability harness 的合成 100/300/500/1000 体压力测试不等于真实物理碰撞场景或浏览器 FPS 基准。
 
 CI 通过后，将具体提交 SHA、运行链接和每组用例结果追加到本文件。
+
+CI status: workflow trigger commit pending verification.

@@ -269,7 +269,7 @@ function v17AllocateIslandBudgets(pairs,budget,frame){
  return islands;
 }
 function v17ScheduleTests(){
- const make=(id,score)=>({a:{id},b:{id:id+10000},score});
+ const bodies=new Map(),body=id=>{if(!bodies.has(id))bodies.set(id,{id});return bodies.get(id);},make=(id,score)=>({a:body(id),b:body(id+10000),score});
  const pairs=[make(1,8),make(2,7),make(3,6),make(4,5),make(5,4),make(6,3),make(7,2),make(8,1)];
  v17IslandServiceState=new Map();
  const first=v17AllocateIslandBudgets(pairs,17,1),sum=first.reduce((n,x)=>n+x.allocation,0),allServed=first.every(x=>x.allocation>=1);

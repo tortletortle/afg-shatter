@@ -375,15 +375,14 @@ function v15SolveManifold(a,b,contacts,iterations=6,cache=null,cacheKey=null,fra
   }
   va=add(a.vel,cross(a.omega,st.ra));vb=add(b.vel,cross(b.omega,st.rb));rel=sub(vb,va);
   const normalSpeed=dot(rel,st.n),tangentVelocity=sub(rel,mul(st.n,normalSpeed)),tangentSpeed=len(tangentVelocity);
-  if(tangentSpeed>1e-8&&st.normalImpulse>0){
+  let candidate=st.tangentImpulse;
+  if(tangentSpeed>1e-8){
    const t=mul(tangentVelocity,1/tangentSpeed),denT=v15EffectiveMass(t,st.ra,st.rb,ia,ib,ira,irb);
-   if(denT>1e-10){
-    const delta=-dot(rel,t)/denT,candidate=add(st.tangentImpulse,mul(t,delta)),limit=mu*st.normalImpulse,mag=len(candidate);
-    const clamped=mag>limit&&mag>1e-12?mul(candidate,limit/mag):candidate;
-    const change=sub(clamped,st.tangentImpulse);st.tangentImpulse=clamped;
-    if(len(change)>1e-10)v15ApplyImpulseVector(a,b,st.ra,st.rb,change,ia,ib,ira,irb);
-   }
+   if(denT>1e-10)candidate=add(st.tangentImpulse,mul(t,-dot(rel,t)/denT));
   }
+  const limit=mu*st.normalImpulse,mag=len(candidate),clamped=mag>limit&&mag>1e-12?mul(candidate,limit/mag):candidate;
+  const change=sub(clamped,st.tangentImpulse);st.tangentImpulse=clamped;
+  if(len(change)>1e-10)v15ApplyImpulseVector(a,b,st.ra,st.rb,change,ia,ib,ira,irb);
  }
  const normalTotal=states.reduce((n,s)=>n+s.normalImpulse,0);
  const frictionTotal=states.reduce((n,s)=>n+len(s.tangentImpulse),0);
@@ -518,8 +517,14 @@ function v16WarmStartTests(){
  moving.vel=V(.2,-.02,0);moving.omega=V(0,0,.1);
  const reversed=[{normal:V(0,-1,0),point:V(0,1,0),depth:.01}],second=v15SolveManifold(moving,fixed,reversed,null,cache,key,2),warmHit=second.warmStartHits>0&&second.warmStartApplied>0;
  const finite=[...moving.pos,...moving.vel,...moving.omega].every(Number.isFinite);
+ const releaseCache=new Map(),releaseKey='-800:-799';
+ const fixedR={id:-800,fixed:true,mass:1,r:1,center:V(),pos:V(),q:qid(),vel:V(),omega:V(),cells:[{mat:'ceramic'}],sleep:false,rest:0};
+ const movingR={id:-799,fixed:false,mass:1,r:1,center:V(),pos:V(0,1.9,0),q:qid(),vel:V(1,-1,0),omega:V(0,0,0),cells:[{mat:'ice'}],sleep:false,rest:0};
+ v15SolveManifold(fixedR,movingR,contact,6,releaseCache,releaseKey,1);movingR.vel=V(0,1,0);
+ const released=v15SolveManifold(fixedR,movingR,contact,null,releaseCache,releaseKey,2);
+ const releasePass=released.normalImpulse<1e-8&&released.frictionImpulse<1e-8&&Math.abs(movingR.vel[0])<1e-7&&!releaseCache.has(releaseKey);
  v16PruneCacheMap(cache,6);const expired=!cache.has(key);
- return {pass:first.normalImpulse>0&&stored===1&&warmHit&&second.iterationsUsed<6&&finite&&expired,first:{normalImpulse:first.normalImpulse,frictionImpulse:first.frictionImpulse,cacheEntries:stored},second:{warmStartHits:second.warmStartHits,warmStartApplied:second.warmStartApplied,iterationsUsed:second.iterationsUsed,normalImpulse:second.normalImpulse},finite,expired};
+ return {pass:first.normalImpulse>0&&stored===1&&warmHit&&second.iterationsUsed<6&&finite&&expired&&releasePass,first:{normalImpulse:first.normalImpulse,frictionImpulse:first.frictionImpulse,cacheEntries:stored},second:{warmStartHits:second.warmStartHits,warmStartApplied:second.warmStartApplied,iterationsUsed:second.iterationsUsed,normalImpulse:second.normalImpulse},release:{normalImpulse:released.normalImpulse,frictionImpulse:released.frictionImpulse,velocityX:movingR.vel[0],cacheCleared:!releaseCache.has(releaseKey)},finite,expired};
 }
 function v16IterationPolicyTests(){
  const impact=v16ChooseIterations([{bounceVn:-3.2,depth:.14}],0);

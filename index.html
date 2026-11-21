@@ -703,19 +703,29 @@ function v17SchedulerTests(){
  const diverse=[make(0,1,9),make(1,2,8),make(10,11,7),make(11,12,6),make(20,21,5),make(21,22,4)];
  const fair=v17SchedulePairs(diverse,3),islandsHit=new Set(fair.scheduled.map(p=>Math.floor(p.a.id/10)));
  const high=v17SchedulePairs([make(100,101,1),make(200,201,20)],1);
- const capped=v17SchedulePairs([make(300,301,3)],1000);
+ const cappedPair=make(300,301,3);cappedPair.visualImportance=1;cappedPair.critical=true;
+ const capped=v17SchedulePairs([cappedPair],1000);
  const heap=[];for(let i=0;i<100;i++)v17KeepCandidate(heap,make(1000+i*2,1001+i*2,i),10);
  const heapPass=heap.length===10&&Math.min(...heap.map(p=>p.score))===90&&Math.max(...heap.map(p=>p.score))===99;
  const cameraState={pos:V(0,0,0),forward:V(0,0,1),right:V(1,0,0),up:V(0,1,0),f:400};
  const visualCache=new Map(),cache=new Map();
- const nearA={id:500,pos:V(0,0,5),vel:V(0,0,0),r:1,sleep:false,fixed:false},nearB={id:501,pos:V(0,0,6.5),vel:V(0,0,0),r:1,sleep:false,fixed:false};
- const farA={id:600,pos:V(100,0,5),vel:V(0,0,0),r:1,sleep:false,fixed:false},farB={id:601,pos:V(100,0,6.5),vel:V(0,0,0),r:1,sleep:false,fixed:false};
- const visible=v17BuildCandidate(nearA,nearB,sub(nearB.pos,nearA.pos),2,2.25,visualCache,cameraState,800,600,cache);
- const offscreen=v17BuildCandidate(farA,farB,sub(farB.pos,farA.pos),2,2.25,visualCache,cameraState,800,600,cache);
+ const nearA={id:500,pos:V(0,0,5),vel:V(0,0,0),r:1,sleep:false,fixed:false},nearB={id:501,pos:V(0,0,6.9),vel:V(0,0,0),r:1,sleep:false,fixed:false};
+ const farA={id:600,pos:V(100,0,5),vel:V(0,0,0),r:1,sleep:false,fixed:false},farB={id:601,pos:V(100,0,6.9),vel:V(0,0,0),r:1,sleep:false,fixed:false};
+ const visible=v17BuildCandidate(nearA,nearB,sub(nearB.pos,nearA.pos),2,3.61,visualCache,cameraState,800,600,cache);
+ const offscreen=v17BuildCandidate(farA,farB,sub(farB.pos,farA.pos),2,3.61,visualCache,cameraState,800,600,cache);
+ const visibleCap=v17PairTestCap(visible),offscreenCap=v17PairTestCap(offscreen);
+ const candidateBodyMap=new Map(),candidateBody=id=>{if(!bodies.has(id))bodies.set(id,{id,pos:V(),vel:V(),r:1,sleep:false,fixed:false});return bodies.get(id);};
+ const highHub=candidateBody(8000),lowHub=candidateBody(9000);
+ for(let i=0;i<40;i++){const p={a:highHub,b:candidateBody(8100+i),score:40-i,visualImportance:.5,budget:0};v17KeepCandidateForBody(candidateBodyMap,p.a,p);v17KeepCandidateForBody(candidateBodyMap,p.b,p);}
+ for(let i=0;i<4;i++){const p={a:lowHub,b:candidateBody(9100+i),score:1-i*.1,visualImportance:.5,budget:0};v17KeepCandidateForBody(candidateBodyMap,p.a,p);v17KeepCandidateForBody(candidateBodyMap,p.b,p);}
+ const candidateSelection=v17SelectDiverseCandidates(candidateBodyMap,10);
+ const lowSelected=candidateSelection.pairs.filter(p=>p.a.id===9000||p.b.id===9000).length;
+ const highSelected=candidateSelection.pairs.length-lowSelected;
+ const candidateDiversity=lowSelected>0&&highSelected>0&&candidateSelection.pairs.length===10;
  const deterministicA=v17SchedulePairs(diverse.map(p=>({...p,budget:0})),4),deterministicB=v17SchedulePairs(diverse.map(p=>({...p,budget:0})),4);
  const deterministic=JSON.stringify(deterministicA.scheduled.map(p=>[p.a.id,p.b.id,p.budget]))===JSON.stringify(deterministicB.scheduled.map(p=>[p.a.id,p.b.id,p.budget]));
- const pass=fair.allocated===3&&islandsHit.size===3&&high.scheduled[0]?.score===20&&capped.allocated===V17_MAX_PAIR_TESTS&&heapPass&&visible.visualImportance>offscreen.visualImportance&&deterministic&&fair.allocated<=fair.budget&&capped.allocated<=capped.budget;
- return {pass,diversity:{islandsHit:islandsHit.size,scheduledPairs:fair.scheduled.length},priority:{selectedScore:high.scheduled[0]?.score},pairCap:capped.maxPairBudget,heap:{pass:heapPass,retained:heap.length,minScore:Math.min(...heap.map(p=>p.score)),maxScore:Math.max(...heap.map(p=>p.score))},visual:{visible:visible.visualImportance,offscreen:offscreen.visualImportance,visiblePriority:visible.score,offscreenPriority:offscreen.score},deterministic,budgetHardCap:fair.allocated<=fair.budget&&capped.allocated<=capped.budget};
+ const pass=fair.allocated===3&&islandsHit.size===3&&high.scheduled[0]?.score===20&&capped.allocated===V17_MAX_PAIR_TESTS&&heapPass&&visible.visualImportance>offscreen.visualImportance&&visibleCap>offscreenCap&&candidateDiversity&&deterministic&&fair.allocated<=fair.budget&&capped.allocated<=capped.budget;
+ return {pass,diversity:{islandsHit:islandsHit.size,scheduledPairs:fair.scheduled.length},candidateDiversity:{selected:candidateSelection.pairs.length,highIslandPairs:highSelected,lowIslandPairs:lowSelected,poolSize:candidateSelection.poolSize},priority:{selectedScore:high.scheduled[0]?.score},pairCap:{critical:capped.maxPairBudget,visible:visibleCap,offscreen:offscreenCap},heap:{pass:heapPass,retained:heap.length,minScore:Math.min(...heap.map(p=>p.score)),maxScore:Math.max(...heap.map(p=>p.score))},visual:{visible:visible.visualImportance,offscreen:offscreen.visualImportance,visiblePriority:visible.score,offscreenPriority:offscreen.score},deterministic,budgetHardCap:fair.allocated<=fair.budget&&capped.allocated<=capped.budget};
 }
 function v17WakeEventTests(){
  const oldMap=islandByBody,oldState=v17WakeState;

@@ -671,7 +671,7 @@ function v16RestingContactBenchmark(){
 }
 
 function v17SchedulerTests(){
- const body=id=>({id,pos:V(id*.01,0,5),vel:V(),r:.5,sleep:false,fixed:false});
+ const bodies=new Map(),body=id=>{if(!bodies.has(id))bodies.set(id,{id,pos:V(id*.01,0,5),vel:V(),r:.5,sleep:false,fixed:false});return bodies.get(id);};
  const make=(a,b,score)=>({a:body(a),b:body(b),score,visualImportance:.5,budget:0});
  const diverse=[make(0,1,9),make(1,2,8),make(10,11,7),make(11,12,6),make(20,21,5),make(21,22,4)];
  const fair=v17SchedulePairs(diverse,3),islandsHit=new Set(fair.scheduled.map(p=>Math.floor(p.a.id/10)));

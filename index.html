@@ -464,8 +464,6 @@ function v16ChooseIterations(states,warmHits){
 }
 
 const V17_MAX_CANDIDATES=4096,V17_MAX_NARROW_TESTS=900,V17_MAX_PAIR_TESTS=24;
-let v17WakeState={events:0,bodies:0,lastReason:'none'},v17StepSamples=[];
-function v17ResetState(){v17WakeState={events:0,bodies:0,lastReason:'none'};v17StepSamples=[];}
 function v17Percentile(values,p){
  if(!values?.length)return 0;
  const a=values.slice().sort((x,y)=>x-y),index=clamp((a.length-1)*p,0,a.length-1),lo=Math.floor(index),hi=Math.ceil(index);

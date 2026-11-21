@@ -1,0 +1,17 @@
+name: V0.17 island budget validation
+
+on:
+  push:
+    branches:
+      - v0.17-budgeted-island-scheduling
+
+jobs:
+  island-budget-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate island scheduling at 100/300/500/1000 fragments
+        run: node tests/v17_island_budget_harness.js

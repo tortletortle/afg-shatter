@@ -481,12 +481,12 @@ function v14RunStackSimulation(){
 }
 
 function step(dt){
- const start=performance.now(),queue=[],snapshot=bodies.slice();
+ const start=performance.now(),queue=[],snapshot=bodies.slice();let groundContactPoints=0,groundFrictionImpulse=0;
  for(const b of snapshot){
   const m=bmat(b);b.age+=dt;b.cool=Math.max(0,b.cool-dt);
   if(b.fixed||b.sleep)continue;
   b.vel[1]-=9.3*dt;b.pos=add(b.pos,mul(b.vel,dt));b.q=qstep(b.q,b.omega,dt);b.omega=mul(b.omega,Math.exp(-.6*dt));
-  if(b.pos[1]-b.r<.04){const ground=v15GroundResolve(b,dt);if(ground&&ground.energy>m.secondary&&b.cool===0){queue.push([b,ground.source,ground.point,Math.min(ground.energy,5)]);b.cool=.4;}}
+  if(b.pos[1]-b.r<.04){const ground=v15GroundResolve(b,dt);if(ground){groundContactPoints+=ground.points||0;groundFrictionImpulse+=ground.frictionImpulse||0;if(ground.energy>m.secondary&&b.cool===0){queue.push([b,ground.source,ground.point,Math.min(ground.energy,5)]);b.cool=.4;}}}
   if(Math.abs(b.pos[0])>4.5){b.pos[0]=Math.sign(b.pos[0])*4.5;b.vel[0]*=-.3;}
   if(Math.abs(b.pos[2])>4.5){b.pos[2]=Math.sign(b.pos[2])*4.5;b.vel[2]*=-.3;}
   if(len(b.vel)<.17&&len(b.omega)<.20)b.rest+=dt;else b.rest=0;
@@ -533,7 +533,7 @@ function step(dt){
  v14UpdateIslands(snapshot,contacts,dt);
  stats.collisionChecks=checks;stats.broadphaseCandidates=broadphaseCandidates;stats.broadphaseCellVisits=broadphaseCellVisits;
  stats.gjkTests=gjkTests;stats.epaIterations=epaIterations;stats.epaFallbacks=epaFallbacks;stats.largeBodyFallbacks=largeBodyFallbacks;stats.narrowphaseTests=narrowphaseTests;
- stats.contactPoints=contactPoints;stats.frictionImpulse=frictionImpulse;stats.budgetFallbacks=budgetFallbacks;stats.collisionBudget=v15BudgetState.budget;stats.narrowphaseMs=narrowphaseMs;
+ stats.contactPoints=contactPoints+groundContactPoints;stats.frictionImpulse=frictionImpulse+groundFrictionImpulse;stats.budgetFallbacks=budgetFallbacks;stats.collisionBudget=v15BudgetState.budget;stats.narrowphaseMs=narrowphaseMs;
  fillStep(dt);
  if(specimen==='single'&&HOLLOW[objectShape])for(const b of bodies)if(!b.fixed&&b.pos[1]-b.r<.001){const y=floorMin(b);if(y<0){b.pos[1]-=y;if(b.vel[1]<0)b.vel[1]=0;}}
  stats.solve+=performance.now()-start;

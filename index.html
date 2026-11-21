@@ -463,7 +463,7 @@ function v16ChooseIterations(states,warmHits){
  return 6;
 }
 
-const V17_MAX_CANDIDATES=4096,V17_MAX_NARROW_TESTS=900,V17_MAX_PAIR_TESTS=24;
+const V17_MAX_CANDIDATES=4096,V17_MAX_CANDIDATES_PER_BODY=32,V17_MAX_NARROW_TESTS=900,V17_MAX_PAIR_TESTS=24;
 function v17Percentile(values,p){
  if(!values?.length)return 0;
  const a=values.slice().sort((x,y)=>x-y),index=clamp((a.length-1)*p,0,a.length-1),lo=Math.floor(index),hi=Math.ceil(index);
@@ -508,8 +508,12 @@ function v17KeepCandidate(heap,pair,limit=V17_MAX_CANDIDATES){
  return true;
 }
 function v17PairPrioritySort(a,b){return b.score-a.score||a.a.id-b.a.id||a.b.id-b.b.id;}
-function v17SchedulePairs(pairs,budget=V17_MAX_NARROW_TESTS){
- const limit=Math.max(0,Math.floor(budget)),parent=new Map();
+function v17KeepCandidateForBody(perBody,body,pair,limit=V17_MAX_CANDIDATES_PER_BODY){
+ let heap=perBody.get(body.id);if(!heap)perBody.set(body.id,heap=[]);
+ return v17KeepCandidate(heap,pair,limit);
+}
+function v17GroupCandidateIslands(pairs){
+ const parent=new Map();
  const find=x=>{if(!parent.has(x))parent.set(x,x);let p=parent.get(x);while(p!==parent.get(p))p=parent.get(p);let q=x;while(parent.get(q)!==p){const n=parent.get(q);parent.set(q,p);q=n;}return p;};
  const union=(a,b)=>{const x=find(a),y=find(b);if(x!==y)parent.set(y,x);};
  for(const p of pairs)union(p.a,p.b);
@@ -518,16 +522,35 @@ function v17SchedulePairs(pairs,budget=V17_MAX_NARROW_TESTS){
  const islands=[...map.values()];
  for(const g of islands){
   g.pairs.sort(v17PairPrioritySort);
-  const top=g.pairs[0]?.score||0,visual=g.pairs.reduce((n,p)=>n+p.visualImportance,0)/Math.max(1,g.pairs.length);
+  const top=g.pairs[0]?.score||0,visual=g.pairs.reduce((n,p)=>n+(p.visualImportance??.5),0)/Math.max(1,g.pairs.length);
   g.priority=top+Math.log1p(g.pairs.length)*.12+visual*.1;
  }
  islands.sort((a,b)=>b.priority-a.priority||a.minId-b.minId);
+ return islands;
+}
+function v17SelectDiverseCandidates(perBody,limit=V17_MAX_CANDIDATES){
+ const unique=new Set();for(const heap of perBody.values())for(const p of heap)unique.add(p);
+ const all=[...unique],islands=v17GroupCandidateIslands(all),selected=[];
+ const maxRank=islands.reduce((m,g)=>Math.max(m,g.pairs.length),0);
+ for(let rank=0;rank<maxRank&&selected.length<limit;rank++)for(const island of islands){
+  const p=island.pairs[rank];if(p)selected.push(p);
+  if(selected.length>=limit)break;
+ }
+ selected.sort(v17PairPrioritySort);
+ return {pairs:selected,poolSize:all.length,bodyCoverage:perBody.size,islandCount:islands.length};
+}
+function v17PairTestCap(pair){
+ if(pair.critical)return V17_MAX_PAIR_TESTS;
+ return clamp(6+Math.round((pair.visualImportance??.5)*18),6,V17_MAX_PAIR_TESTS);
+}
+function v17SchedulePairs(pairs,budget=V17_MAX_NARROW_TESTS){
+ const limit=Math.max(0,Math.floor(budget)),islands=v17GroupCandidateIslands(pairs);
  let remaining=limit,allocated=0;
  const maxRank=islands.reduce((m,g)=>Math.max(m,g.pairs.length),0);
  for(let pass=0;pass<V17_MAX_PAIR_TESTS&&remaining>0;pass++){
   for(let rank=0;rank<maxRank&&remaining>0;rank++){
    for(const island of islands){
-    const p=island.pairs[rank];if(!p)continue;
+    const p=island.pairs[rank];if(!p||p.budget>=v17PairTestCap(p))continue;
     p.budget++;allocated++;remaining--;
     if(remaining<=0)break;
    }
@@ -545,30 +568,34 @@ function v17ScaleBenchmark(sizes=[100,300,500,1000],trials=5){
    id:i,pos:V((((i*37)%97)/97-.5)*.8,(((i*53)%89)/89-.5)*.8,(((i*29)%83)/83-.5)*.8),
    vel:V(((i*7)%13)*.012,((i*11)%17)*.01,((i*5)%19)*.009),r:1,sleep:i%11===0,fixed:false
   }));
-  const buildSamples=[],scheduleSamples=[];let final={retainedCandidates:0,scheduledPairs:0,budgetAllocated:0,islandCount:0,maxPairBudget:0};
+  const buildSamples=[],selectionSamples=[],scheduleSamples=[];
+  let final={retainedCandidates:0,candidatePool:0,bodyCoverage:0,candidateIslands:0,scheduledPairs:0,budgetAllocated:0,islandCount:0,maxPairBudget:0};
   for(let trial=0;trial<trials;trial++){
-   const heap=[],visualCache=new Map(),cache=new Map(),t0=performance.now();
+   const perBody=new Map(),visualCache=new Map(),cache=new Map(),t0=performance.now();
    for(let i=0;i<count;i++)for(let j=i+1;j<count;j++){
     const a=bodies[i],b=bodies[j],d=sub(b.pos,a.pos),d2=dot(d,d),rSum=a.r+b.r+2*V14_CONTACT_SKIN;
     if(d2>=rSum*rSum)continue;
     const p=v17BuildCandidate(a,b,d,rSum,d2,visualCache,null,800,600,cache);
-    v17KeepCandidate(heap,p,V17_MAX_CANDIDATES);
+    v17KeepCandidateForBody(perBody,a,p);v17KeepCandidateForBody(perBody,b,p);
    }
-   const t1=performance.now(),pairs=heap.sort(v17PairPrioritySort),plan=v17SchedulePairs(pairs,V17_MAX_NARROW_TESTS),t2=performance.now();
-   buildSamples.push(t1-t0);scheduleSamples.push(t2-t1);
-   final={retainedCandidates:pairs.length,scheduledPairs:plan.scheduled.length,budgetAllocated:plan.allocated,islandCount:plan.islandCount,maxPairBudget:plan.maxPairBudget};
+   const t1=performance.now(),selection=v17SelectDiverseCandidates(perBody,V17_MAX_CANDIDATES),t2=performance.now();
+   const plan=v17SchedulePairs(selection.pairs,V17_MAX_NARROW_TESTS),t3=performance.now();
+   buildSamples.push(t1-t0);selectionSamples.push(t2-t1);scheduleSamples.push(t3-t2);
+   final={retainedCandidates:selection.pairs.length,candidatePool:selection.poolSize,bodyCoverage:selection.bodyCoverage,candidateIslands:selection.islandCount,scheduledPairs:plan.scheduled.length,budgetAllocated:plan.allocated,islandCount:plan.islandCount,maxPairBudget:plan.maxPairBudget};
   }
-  const totalSamples=buildSamples.map((x,i)=>x+scheduleSamples[i]);
+  const totalSamples=buildSamples.map((x,i)=>x+selectionSamples[i]+scheduleSamples[i]);
   reports.push({
-   bodies:count,potentialPairs:count*(count-1)/2,retainedCandidates:final.retainedCandidates,
-   scheduledPairs:final.scheduledPairs,budgetAllocated:final.budgetAllocated,islandCount:final.islandCount,maxPairBudget:final.maxPairBudget,
+   bodies:count,potentialPairs:count*(count-1)/2,candidatePool:final.candidatePool,retainedCandidates:final.retainedCandidates,
+   bodyCoverage:final.bodyCoverage,candidateIslands:final.candidateIslands,scheduledPairs:final.scheduledPairs,
+   budgetAllocated:final.budgetAllocated,islandCount:final.islandCount,maxPairBudget:final.maxPairBudget,
    candidateBuildP95Ms:v17Percentile(buildSamples,.95),candidateBuildP99Ms:v17Percentile(buildSamples,.99),
+   candidateSelectionP95Ms:v17Percentile(selectionSamples,.95),candidateSelectionP99Ms:v17Percentile(selectionSamples,.99),
    schedulerP95Ms:v17Percentile(scheduleSamples,.95),schedulerP99Ms:v17Percentile(scheduleSamples,.99),
    totalP95Ms:v17Percentile(totalSamples,.95),totalP99Ms:v17Percentile(totalSamples,.99),
-   finite:[...buildSamples,...scheduleSamples].every(Number.isFinite)
+   finite:[...buildSamples,...selectionSamples,...scheduleSamples].every(Number.isFinite)
   });
  }
- return {pass:reports.length===sizes.length&&reports.every(r=>r.retainedCandidates<=V17_MAX_CANDIDATES&&r.scheduledPairs<=V17_MAX_NARROW_TESTS&&r.budgetAllocated<=V17_MAX_NARROW_TESTS&&r.maxPairBudget<=V17_MAX_PAIR_TESTS&&r.finite),budgetUnits:'GJK convex-cell tests per simulation step',fixedBudget:V17_MAX_NARROW_TESTS,candidateCap:V17_MAX_CANDIDATES,maxPairBudget:V17_MAX_PAIR_TESTS,trials,reports,interpretation:'Synthetic dense candidate-generation and island-scheduler benchmark. It is not a full rigid-body simulation or browser FPS benchmark.'};
+ return {pass:reports.length===sizes.length&&reports.every(r=>r.retainedCandidates<=V17_MAX_CANDIDATES&&r.candidatePool>=r.retainedCandidates&&r.scheduledPairs<=V17_MAX_NARROW_TESTS&&r.budgetAllocated<=V17_MAX_NARROW_TESTS&&r.maxPairBudget<=V17_MAX_PAIR_TESTS&&r.finite),budgetUnits:'GJK convex-cell tests per simulation step',fixedBudget:V17_MAX_NARROW_TESTS,candidateCap:V17_MAX_CANDIDATES,perBodyCandidateCap:V17_MAX_CANDIDATES_PER_BODY,maxPairBudget:V17_MAX_PAIR_TESTS,trials,reports,interpretation:'Synthetic dense candidate-generation and island-diverse scheduler benchmark. It is not a full rigid-body simulation or browser FPS benchmark.'};
 }
 
 function v15GroundResolve(b,dt,cache=null,frame=0){

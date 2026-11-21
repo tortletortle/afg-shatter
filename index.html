@@ -440,12 +440,13 @@ function v16StoreCache(a,b,states,cache,key,frame){
  if(entries.length){cache.delete(key);cache.set(key,entries);}else cache.delete(key);
  while(cache.size>V16_CACHE_MAX_PAIRS)cache.delete(cache.keys().next().value);
 }
-function v16PruneCache(frame){
- for(const [key,entries] of [...v16ContactCache.entries()]){
+function v16PruneCacheMap(cache,frame){
+ for(const [key,entries] of [...cache.entries()]){
   const keep=entries.filter(e=>frame-e.lastSeen<=V16_CACHE_TTL);
-  if(keep.length)v16ContactCache.set(key,keep);else v16ContactCache.delete(key);
+  if(keep.length)cache.set(key,keep);else cache.delete(key);
  }
 }
+function v16PruneCache(frame){v16PruneCacheMap(v16ContactCache,frame);}
 function v16ChooseIterations(states,warmHits){
  const approach=states.reduce((m,s)=>Math.max(m,Math.max(0,-s.bounceVn)),0);
  const depth=states.reduce((m,s)=>Math.max(m,s.depth),0),ratio=warmHits/Math.max(1,states.length);
@@ -517,7 +518,7 @@ function v16WarmStartTests(){
  moving.vel=V(.2,-.02,0);moving.omega=V(0,0,.1);
  const second=v15SolveManifold(fixed,moving,contact,null,cache,key,2),warmHit=second.warmStartHits>0&&second.warmStartApplied>0;
  const finite=[...moving.pos,...moving.vel,...moving.omega].every(Number.isFinite);
- v16PruneCache(6);const expired=!cache.has(key);
+ v16PruneCacheMap(cache,6);const expired=!cache.has(key);
  return {pass:first.normalImpulse>0&&stored===1&&warmHit&&second.iterationsUsed<6&&finite&&expired,first:{normalImpulse:first.normalImpulse,frictionImpulse:first.frictionImpulse,cacheEntries:stored},second:{warmStartHits:second.warmStartHits,warmStartApplied:second.warmStartApplied,iterationsUsed:second.iterationsUsed,normalImpulse:second.normalImpulse},finite,expired};
 }
 function v16IterationPolicyTests(){

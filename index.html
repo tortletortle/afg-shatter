@@ -533,21 +533,22 @@ function v16RestingContactBenchmark(){
  const run=warm=>{
   const cache=new Map(),key='-1:0';
   const ground={id:-1,fixed:true,ground:true,mass:1,r:1,center:V(),pos:V(),q:qid(),vel:V(),omega:V(),cells:[{mat:'ceramic'}]};
-  const body={id:0,fixed:false,mass:1,r:1,center:V(),pos:V(0,1.1,0),q:qid(),vel:V(),omega:V(),cells:[{mat:'ice'}],sleep:false,rest:0};
-  let hits=0,contacts=0,iterationWork=0,maxPenetration=0,maxSpeed=0;
+  const body={id:0,fixed:false,mass:1,r:1,center:V(),pos:V(0,1.01,0),q:qid(),vel:V(),omega:V(),cells:[{mat:'ice'}],sleep:false,rest:0};
+  let hits=0,contacts=0,iterationWork=0,maxPenetration=0,maxPostContactSpeed=0;
   for(let frame=1;frame<=360;frame++){
    body.vel[1]-=9.3/120;body.pos=add(body.pos,mul(body.vel,1/120));
-   if(body.pos[1]<1.02){
+   if(body.pos[1]<1.025){
     const depth=Math.max(0,1-body.pos[1]),solved=v15SolveManifold(ground,body,[{normal:V(0,1,0),point:V(0,0,0),depth}],warm?null:6,warm?cache:null,warm?key:null,frame);
     hits+=solved.warmStartHits||0;contacts+=solved.points||0;iterationWork+=(solved.iterationsUsed||0)*(solved.points||0);
    }
    if(warm)v16PruneCacheMap(cache,frame);
-   maxPenetration=Math.max(maxPenetration,Math.max(0,1-body.pos[1]));maxSpeed=Math.max(maxSpeed,len(body.vel));
+   maxPenetration=Math.max(maxPenetration,Math.max(0,1-body.pos[1]));
+   if(contacts)maxPostContactSpeed=Math.max(maxPostContactSpeed,len(body.vel));
   }
-  return {finalHeight:body.pos[1],warmHits:hits,contacts,avgIterations:contacts?iterationWork/contacts:0,maxPenetration,maxSpeed,finite:[...body.pos,...body.vel,...body.omega].every(Number.isFinite)};
+  return {finalHeight:body.pos[1],warmHits:hits,contacts,avgIterations:contacts?iterationWork/contacts:0,maxPenetration,maxPostContactSpeed,finite:[...body.pos,...body.vel,...body.omega].every(Number.isFinite)};
  };
  const warm=run(true),cold=run(false);
- return {pass:warm.warmHits>200&&warm.avgIterations<cold.avgIterations*.6&&warm.finalHeight>.97&&cold.finalHeight>.97&&warm.maxPenetration<.03&&cold.maxPenetration<.03&&warm.finite&&cold.finite,warm,cold,interpretation:'Deterministic one-body resting-contact harness; iteration-work comparison, not browser frame-time evidence.'};
+ return {pass:warm.warmHits>200&&warm.avgIterations<cold.avgIterations*.6&&warm.finalHeight>.99&&cold.finalHeight>.99&&warm.maxPenetration<.03&&cold.maxPenetration<.03&&warm.maxPostContactSpeed<.2&&cold.maxPostContactSpeed<.2&&warm.finite&&cold.finite,warm,cold,interpretation:'Deterministic one-body resting-contact harness; iteration-work comparison, not browser frame-time evidence.'};
 }
 
 function v14Cube(center,half,q=[0,0,0,1]){const pts=[];for(let x of [-1,1])for(let y of [-1,1])for(let z of [-1,1])pts.push(add(center,rot(q,V(x*half,y*half,z*half))));return pts}

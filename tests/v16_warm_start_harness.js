@@ -32,6 +32,7 @@ function v15MaterialValue(c,key,fallback){
  const m=cmat(c);
  return Number.isFinite(m?.[key])?m[key]:fallback;
 }
+let islandByBody=new Map();
 `;
 
 function between(source, start, end, file) {
@@ -56,10 +57,11 @@ function compileInlineScripts(html, file) {
 }
 
 function runPhysicsTests(html, file) {
+ const wake = between(html, 'let v17WakeState=', 'function v14UpdateIslands', file);
  const production = between(html, 'function v15ApplyImpulseVector', 'function v15MaterialTests', file);
  const tests = between(html, 'function v16WarmStartTests', 'function v14Cube', file);
  const execute = new Function(
-  prelude + production + tests +
+  prelude + wake + production + tests +
   `return {
    warmStart: v16WarmStartTests(),
    adaptiveIterations: v16IterationPolicyTests(),

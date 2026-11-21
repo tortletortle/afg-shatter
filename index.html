@@ -255,9 +255,10 @@ function v17AllocateIslandBudgets(pairs,budget,frame){
   islands.push({key,ids,pairs:items,priority,starvation,weight,allocation:0});
  }
  islands.sort((a,b)=>(b.priority+b.starvation*.65)-(a.priority+a.starvation*.65)||a.key.localeCompare(b.key));
- const cap=Math.max(0,Math.floor(budget)),base=Math.min(1,cap/Math.max(1,islands.length));
+ const cap=Math.max(0,Math.floor(budget));
  let left=cap;
- if(base>=1){for(const island of islands){island.allocation=1;left--;}}
+ if(cap<islands.length){for(let i=0;i<cap;i++)islands[i].allocation=1;left=0;}
+ else{for(const island of islands){island.allocation=1;left--;}}
  if(left>0&&islands.length){
   const total=islands.reduce((n,x)=>n+x.weight,0);
   for(const island of islands){const exact=left*island.weight/total,whole=Math.floor(exact);island.allocation+=whole;island.remainder=exact-whole;}

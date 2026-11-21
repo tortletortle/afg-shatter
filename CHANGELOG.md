@@ -7,6 +7,7 @@
 - Add cache expiry (3 unseen simulation steps) and a 4096-pair capacity limit.
 - Add adaptive sequential-impulse iteration counts: 2 / 4 / 6 / 8 according to warm-start coverage, approach speed and penetration depth.
 - Apply warm starting and adaptive iterations to multi-point ground contacts.
+- Port the same V0.16 physics solver and diagnostics to the forced-Canvas2D compatibility build.
 - Add warm-start hit, applied-impulse, cache-size and average-iteration telemetry.
 
 ## V0.15 — Multi-point Contact & Friction Solver

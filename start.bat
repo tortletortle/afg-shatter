@@ -1,2 +1,4 @@
 @echo off
-start "AFG Shatter V0.13" "%~dp0compat.html"
+setlocal
+start "AFG Shatter V0.14" "%~dp0compat.html"
+endlocal

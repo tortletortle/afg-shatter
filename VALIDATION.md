@@ -1,15 +1,26 @@
-# V0.13 Validation Summary
+# V0.14 验收记录
 
-See README.md for full methodology and limitations.
+测试环境：系统 Chromium headless + Playwright；Canvas2D 强制兼容版；视口 1440×900、390×844、820×1180。不是实体手机 / Windows / GPU 测试。
 
-| Suite | Cases | Result |
-|---|---:|---|
-| Hollow geometry | 3 | Pass |
-| Multi-seed fracture | 9 | Pass |
-| Legacy entries | 17 | Pass |
-| Random AABB broadphase | 5 × 360 synthetic bodies | 0 missed overlapping pairs |
-| PBF neighbor coverage | 6 × 80 steps | 0 fluid / wall neighbor omissions |
-| Fluid-solid coupling | 1 stress replay | Pass; momentum residuals near machine precision |
-| Responsive layouts and interaction | 3 | Pass |
+## 凸体算法
+- 9/9 确定性与随机测试通过：分离、轴对齐重叠、偏移重叠、旋转重叠、浅接触、薄片碎片、包含关系、500 组随机 OBB vs SAT。
+- 500 组随机 OBB：相交判定错配 0；EPA 深度超阈值错配 0；平均绝对深度误差 2.3456e-16；最大误差 9.9920e-16。
+- 旧球形窄相（半径系数 0.72）在同一随机样本中：16 次漏检、7 次误报。
+- 500 组测试耗时约 70–113 ms；这是合成基准耗时，不是游戏单帧耗时。
 
-Performance comparisons are headless Chromium Canvas2D measurements. They are not device or GPU benchmarks. PBF physical accuracy remains unresolved.
+## 接触岛
+- 接触图保留测试通过：两个已休眠动态刚体在没有新碰撞查询的下一帧仍保留同一岛。
+- 岛内唤醒测试通过：对任一成员唤醒，其他动态成员同步唤醒。
+- 两动态刚体 600 步测试：数值有限，最终休眠，接触岛数 1。
+- 固定支撑 + 动态刚体堆叠：最终岛数 1，动态刚体休眠 1 个，岛连接仍保留。
+
+## 真实试样回归
+- 中空玻璃瓶：84 cells、156 bonds；体积误差 2.22e-16；非流形 0；边界错误 0；凸性错误 0；腔体为空且底部 / 壁面封闭。
+- 每个视口执行 8 次冲击，最终 32 个刚体；质量有限；地面最低点不低于 0（浮点容差内）。
+- 三种视口均无页面异常；GJK 测试 78–83；EPA 回退 0；高复杂体回退 0；检测到 12–16 个接触对。
+
+## 未验收
+- WebGL2 在本测试环境不可用，实际 GPU 渲染性能未验收。
+- 真实 Windows 双击启动、真实触摸屏和手机 GPU 未验收。
+- PBF / CSF 物理准确性仍未通过独立完整验收。
+- 任意凸体 manifold、完整惯性张量、复杂体超预算回退路径仍需扩展测试。

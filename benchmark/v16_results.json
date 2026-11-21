@@ -1,0 +1,60 @@
+{
+  "version": "AFG Shatter V0.16",
+  "environment": {
+    "runtime": "V8 functions.exec isolated harness",
+    "method": "Production solver and ground resolver functions extracted from index.html; deterministic vector/quaternion/material stubs",
+    "browserSmokeTest": "not run",
+    "deviceAndGpuTests": "not run"
+  },
+  "results": {
+    "warmStart": {
+      "passed": true,
+      "initialCacheEntries": 1,
+      "reversedBodyOrderMatch": true,
+      "warmStartHits": 1,
+      "warmStartApplied": 1,
+      "cacheExpiry": true,
+      "finiteState": true
+    },
+    "adaptiveIterations": {
+      "passed": true,
+      "cases": 4,
+      "impact": 8,
+      "ordinary": 6,
+      "warmStable": 2,
+      "warmMedium": 4
+    },
+    "restingGroundContact": {
+      "steps": 360,
+      "contactPoints": 1440,
+      "warmStartHits": 1436,
+      "warmStartHitRate": 0.9972222222,
+      "warmStart": {
+        "averageSolverIterations": 2.0111111111,
+        "finalHeight": 1,
+        "maxPenetration": 0,
+        "maxPostContactSpeed": 0.0007141363,
+        "finite": true
+      },
+      "coldStart": {
+        "averageSolverIterations": 6,
+        "finalHeight": 1,
+        "maxPenetration": 0,
+        "maxPostContactSpeed": 0.000833392,
+        "finite": true
+      },
+      "iterationWorkReduction": 0.6648148148,
+      "pass": true
+    },
+    "syntax": {
+      "inlineScriptBlocks": 6,
+      "compiled": 6,
+      "errors": 0
+    }
+  },
+  "limitations": [
+    "The resting-contact result is a deterministic one-body/fixed-ground benchmark, not a complex multi-body stack test.",
+    "Reduced solver iterations do not establish an equivalent browser frame-time reduction.",
+    "No complete browser, Windows, mobile, WebGL2 or GPU acceptance was performed."
+  ]
+}

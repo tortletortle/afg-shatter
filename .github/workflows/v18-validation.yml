@@ -1,0 +1,36 @@
+name: V0.18 plastic indentation validation and release package
+on:
+  push:
+    branches:
+      - v0.18-plastic-can
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run V0.16 warm-start regression
+        run: node tests/v16_warm_start_harness.js
+      - name: Run V0.17 fixed-budget scalability regression
+        run: node tests/v17_scalability_harness.js
+      - name: Run V0.18 plastic indentation regression
+        run: node tests/v18_plastic_harness.js
+      - name: Package full project and Windows launch bundle
+        run: |
+          mkdir -p release/windows
+          cp index.html compat.html start.bat README.md README_运行说明.md CHANGELOG.md VALIDATION.md release/
+          cp tests/v16_warm_start_harness.js tests/v17_scalability_harness.js tests/v18_plastic_harness.js release/
+          (cd release && zip -qr ../AFG_Shatter_V0.18_Project.zip .)
+          cp compat.html start.bat README_运行说明.md release/windows/
+          (cd release && zip -qr ../AFG_Shatter_V0.18_Windows_启动包.zip windows)
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: AFG-Shatter-V0.18-release
+          path: |
+            AFG_Shatter_V0.18_Project.zip
+            AFG_Shatter_V0.18_Windows_启动包.zip

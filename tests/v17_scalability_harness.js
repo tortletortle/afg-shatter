@@ -82,8 +82,8 @@ for (const file of builds) {
 }
 
 function stableScale(scale) {
- return scale.reports.map(({bodies,potentialPairs,retainedCandidates,scheduledPairs,budgetAllocated,islandCount,maxPairBudget}) =>
-  ({bodies,potentialPairs,retainedCandidates,scheduledPairs,budgetAllocated,islandCount,maxPairBudget}));
+ return scale.reports.map(({bodies,potentialPairs,candidatePool,retainedCandidates,bodyCoverage,candidateIslands,scheduledPairs,budgetAllocated,islandCount,maxPairBudget}) =>
+  ({bodies,potentialPairs,candidatePool,retainedCandidates,bodyCoverage,candidateIslands,scheduledPairs,budgetAllocated,islandCount,maxPairBudget}));
 }
 assert.deepEqual(reports[0].tests.warmStart,reports[1].tests.warmStart,'V0.16 warm-start parity');
 assert.deepEqual(reports[0].tests.adaptiveIterations,reports[1].tests.adaptiveIterations,'V0.16 iteration parity');

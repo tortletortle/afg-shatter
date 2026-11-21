@@ -82,7 +82,7 @@ function buildHollow(kind){let h=HOLLOW[kind],faceMap=new Map();for(let fs of ho
  for(let [tag,arr] of faceMap){if(arr.length===2){let [[a,f],[b]]=arr;addBond(a,b,tag,Math.max(.012,faceArea(f.p)*M[material].toughness*simrnd(.78,1.22)))}else if(arr.length===1){arr[0][1].tag=arr[0][1].exposed}else throw Error('nonmanifold vessel face')}
  initialMass=cells.reduce((s,c)=>s+c.mass,0);let b=makeBody(cells.slice());b.pos=add(b.pos,V(0,2.1,0));b.fixed=true;bodies.push(b);$('detail').disabled=true;$('sceneName').textContent=h.name;$('sceneSub').textContent=h.desc;log('HOLLOW '+cells.length+' cells / '+edges.length+' bonds');updateUI();
 }
-function reset(){v15BudgetState={budget:900,avgMs:0,samples:0,targetMs:2.2,lastTests:0,lastFallbacks:0};v16ResetCache();v17ResetState();if(gpuRenderer)gpuRenderer.reset();seed=(+$('seed').value||817)>>>0;cells=[];edges=[];bodies=[];islandByBody=new Map();particles=[];waves=[];events=[];nextId=nextBody=0;slowT=shake=0;lastHit=null;stats={hits:0,broken:0,secondary:0,energy:0,input:0,spill:0,lastFracture:0,solve:0,peakBodies:1,collisionChecks:0,broadphaseCandidates:0,broadphaseCellVisits:0,refinements:0,budgetDrops:0,gjkTests:0,epaIterations:0,epaFallbacks:0,largeBodyFallbacks:0,narrowphaseTests:0,contactPairs:0,islands:0,sleepingBodies:0,contactPoints:0,frictionImpulse:0,budgetFallbacks:0,collisionBudget:900,narrowphaseMs:0,warmStartHits:0,warmStartApplied:0,solverContacts:0,solverIterations:0,avgSolverIterations:0,warmStartCachePairs:0,v17CandidatesKept:0,v17CandidatesDropped:0,v17ScheduledPairs:0,v17DeferredPairs:0,v17BudgetAllocated:0,v17BudgetUsed:0,v17Islands:0,v17SchedulerMs:0,v17BudgetFallbacks:0,v17DeferredFallbacks:0,v17WakeEvents:0,v17WokenBodies:0,v17SleepingIslands:0};window.AFGFeedback?.clear();resetFill();if(specimen!=='single'){buildComposite();return}if(HOLLOW[objectShape]){buildHollow(objectShape);return}$('detail').disabled=false;let mat=M[material], shapeKind=objectShape==='auto'?mat.shape:objectShape, outer=shape(shapeKind),N=+$('detail').value,seeds=[];initialMass=props(outer).mass;while(seeds.length<N){let p=V(simrnd(-1.35,1.35),simrnd(-1.35,1.35),simrnd(-1.35,1.35));if(outer.every(f=>dot(p,f.n)<dot(f.p[0],f.n)-.015)&&!seeds.some(q=>len(sub(p,q))<.18))seeds.push(p)}for(let i=0;i<N;i++){let f=outer.slice();for(let j=0;j<N;j++)if(i!==j){let d=sub(seeds[j],seeds[i]),l=len(d);f=clip(f,mul(d,1/l),(dot(seeds[j],seeds[j])-dot(seeds[i],seeds[i]))/(2*l),'pair:'+Math.min(i,j)+':'+Math.max(i,j));if(!f.length)break}let cell=newCell(f);if(!(cell.mass>EPS))throw Error('invalid cell');cells.push(cell)}for(let c of cells)for(let f of c.faces){if(!f.tag.startsWith('pair:'))continue;let [,i,j]=f.tag.split(':').map((v,k)=>k?+v:v);if(c.id!==i)continue;let a=faceArea(f.p);addBond(cells[i],cells[j],f.tag,Math.max(.025,a*mat.toughness*simrnd(.82,1.18)))}let b=makeBody(cells.slice());b.pos=add(b.pos,V(0,2.1,0));b.fixed=true;bodies.push(b);$('sceneName').textContent=objectShape==='auto'?mat.name:(mat.name+' · '+SHAPE_INFO[shapeKind].name);$('sceneSub').textContent=objectShape==='auto'?mat.desc:SHAPE_INFO[shapeKind].desc;log('REBUILD '+N+' cells / '+edges.length+' bonds / '+shapeKind);updateUI();}
+function reset(){v15BudgetState={budget:900,avgMs:0,samples:0,targetMs:2.2,lastTests:0,lastFallbacks:0};v16ResetCache();v17ResetState();if(gpuRenderer)gpuRenderer.reset();seed=(+$('seed').value||817)>>>0;cells=[];edges=[];bodies=[];islandByBody=new Map();particles=[];waves=[];events=[];nextId=nextBody=0;slowT=shake=0;lastHit=null;stats={hits:0,broken:0,secondary:0,energy:0,input:0,spill:0,lastFracture:0,solve:0,peakBodies:1,collisionChecks:0,broadphaseCandidates:0,broadphaseCellVisits:0,refinements:0,budgetDrops:0,gjkTests:0,epaIterations:0,epaFallbacks:0,largeBodyFallbacks:0,narrowphaseTests:0,contactPairs:0,islands:0,sleepingBodies:0,contactPoints:0,frictionImpulse:0,budgetFallbacks:0,collisionBudget:900,narrowphaseMs:0,warmStartHits:0,warmStartApplied:0,solverContacts:0,solverIterations:0,avgSolverIterations:0,warmStartCachePairs:0,v17CandidatePool:0,v17BodyCoverage:0,v17CandidateIslands:0,v17CandidatesKept:0,v17CandidatesDropped:0,v17ScheduledPairs:0,v17DeferredPairs:0,v17BudgetAllocated:0,v17BudgetUsed:0,v17Islands:0,v17SchedulerMs:0,v17BudgetFallbacks:0,v17DeferredFallbacks:0,v17WakeEvents:0,v17WokenBodies:0,v17SleepingIslands:0};window.AFGFeedback?.clear();resetFill();if(specimen!=='single'){buildComposite();return}if(HOLLOW[objectShape]){buildHollow(objectShape);return}$('detail').disabled=false;let mat=M[material], shapeKind=objectShape==='auto'?mat.shape:objectShape, outer=shape(shapeKind),N=+$('detail').value,seeds=[];initialMass=props(outer).mass;while(seeds.length<N){let p=V(simrnd(-1.35,1.35),simrnd(-1.35,1.35),simrnd(-1.35,1.35));if(outer.every(f=>dot(p,f.n)<dot(f.p[0],f.n)-.015)&&!seeds.some(q=>len(sub(p,q))<.18))seeds.push(p)}for(let i=0;i<N;i++){let f=outer.slice();for(let j=0;j<N;j++)if(i!==j){let d=sub(seeds[j],seeds[i]),l=len(d);f=clip(f,mul(d,1/l),(dot(seeds[j],seeds[j])-dot(seeds[i],seeds[i]))/(2*l),'pair:'+Math.min(i,j)+':'+Math.max(i,j));if(!f.length)break}let cell=newCell(f);if(!(cell.mass>EPS))throw Error('invalid cell');cells.push(cell)}for(let c of cells)for(let f of c.faces){if(!f.tag.startsWith('pair:'))continue;let [,i,j]=f.tag.split(':').map((v,k)=>k?+v:v);if(c.id!==i)continue;let a=faceArea(f.p);addBond(cells[i],cells[j],f.tag,Math.max(.025,a*mat.toughness*simrnd(.82,1.18)))}let b=makeBody(cells.slice());b.pos=add(b.pos,V(0,2.1,0));b.fixed=true;bodies.push(b);$('sceneName').textContent=objectShape==='auto'?mat.name:(mat.name+' · '+SHAPE_INFO[shapeKind].name);$('sceneSub').textContent=objectShape==='auto'?mat.desc:SHAPE_INFO[shapeKind].desc;log('REBUILD '+N+' cells / '+edges.length+' bonds / '+shapeKind);updateUI();}
 function log(s){events.unshift({t:Date.now(),message:s});events=events.slice(0,11);$('log').textContent=events.map(e=>e.message).join('\n')}
 const world=(b,p)=>add(b.pos,rot(b.q,sub(p,b.center))), local=(b,p)=>add(b.center,rot(inv(b.q),sub(p,b.pos)));
 function activeEdges(b){const out=[];for(const c of b.cells)for(const e of c.links)if(e.a===c&&!e.broken&&e.a.body===b&&e.b.body===b)out.push(e);return out}
@@ -463,7 +463,7 @@ function v16ChooseIterations(states,warmHits){
  return 6;
 }
 
-const V17_MAX_CANDIDATES=4096,V17_MAX_NARROW_TESTS=900,V17_MAX_PAIR_TESTS=24;
+const V17_MAX_CANDIDATES=4096,V17_MAX_CANDIDATES_PER_BODY=32,V17_MAX_NARROW_TESTS=900,V17_MAX_PAIR_TESTS=24;
 function v17Percentile(values,p){
  if(!values?.length)return 0;
  const a=values.slice().sort((x,y)=>x-y),index=clamp((a.length-1)*p,0,a.length-1),lo=Math.floor(index),hi=Math.ceil(index);
@@ -508,8 +508,12 @@ function v17KeepCandidate(heap,pair,limit=V17_MAX_CANDIDATES){
  return true;
 }
 function v17PairPrioritySort(a,b){return b.score-a.score||a.a.id-b.a.id||a.b.id-b.b.id;}
-function v17SchedulePairs(pairs,budget=V17_MAX_NARROW_TESTS){
- const limit=Math.max(0,Math.floor(budget)),parent=new Map();
+function v17KeepCandidateForBody(perBody,body,pair,limit=V17_MAX_CANDIDATES_PER_BODY){
+ let heap=perBody.get(body.id);if(!heap)perBody.set(body.id,heap=[]);
+ return v17KeepCandidate(heap,pair,limit);
+}
+function v17GroupCandidateIslands(pairs){
+ const parent=new Map();
  const find=x=>{if(!parent.has(x))parent.set(x,x);let p=parent.get(x);while(p!==parent.get(p))p=parent.get(p);let q=x;while(parent.get(q)!==p){const n=parent.get(q);parent.set(q,p);q=n;}return p;};
  const union=(a,b)=>{const x=find(a),y=find(b);if(x!==y)parent.set(y,x);};
  for(const p of pairs)union(p.a,p.b);
@@ -518,16 +522,35 @@ function v17SchedulePairs(pairs,budget=V17_MAX_NARROW_TESTS){
  const islands=[...map.values()];
  for(const g of islands){
   g.pairs.sort(v17PairPrioritySort);
-  const top=g.pairs[0]?.score||0,visual=g.pairs.reduce((n,p)=>n+p.visualImportance,0)/Math.max(1,g.pairs.length);
+  const top=g.pairs[0]?.score||0,visual=g.pairs.reduce((n,p)=>n+(p.visualImportance??.5),0)/Math.max(1,g.pairs.length);
   g.priority=top+Math.log1p(g.pairs.length)*.12+visual*.1;
  }
  islands.sort((a,b)=>b.priority-a.priority||a.minId-b.minId);
+ return islands;
+}
+function v17SelectDiverseCandidates(perBody,limit=V17_MAX_CANDIDATES){
+ const unique=new Set();for(const heap of perBody.values())for(const p of heap)unique.add(p);
+ const all=[...unique],islands=v17GroupCandidateIslands(all),selected=[];
+ const maxRank=islands.reduce((m,g)=>Math.max(m,g.pairs.length),0);
+ for(let rank=0;rank<maxRank&&selected.length<limit;rank++)for(const island of islands){
+  const p=island.pairs[rank];if(p)selected.push(p);
+  if(selected.length>=limit)break;
+ }
+ selected.sort(v17PairPrioritySort);
+ return {pairs:selected,poolSize:all.length,bodyCoverage:perBody.size,islandCount:islands.length};
+}
+function v17PairTestCap(pair){
+ if(pair.critical)return V17_MAX_PAIR_TESTS;
+ return clamp(6+Math.round((pair.visualImportance??.5)*18),6,V17_MAX_PAIR_TESTS);
+}
+function v17SchedulePairs(pairs,budget=V17_MAX_NARROW_TESTS){
+ const limit=Math.max(0,Math.floor(budget)),islands=v17GroupCandidateIslands(pairs);
  let remaining=limit,allocated=0;
  const maxRank=islands.reduce((m,g)=>Math.max(m,g.pairs.length),0);
  for(let pass=0;pass<V17_MAX_PAIR_TESTS&&remaining>0;pass++){
   for(let rank=0;rank<maxRank&&remaining>0;rank++){
    for(const island of islands){
-    const p=island.pairs[rank];if(!p)continue;
+    const p=island.pairs[rank];if(!p||p.budget>=v17PairTestCap(p))continue;
     p.budget++;allocated++;remaining--;
     if(remaining<=0)break;
    }
@@ -545,30 +568,34 @@ function v17ScaleBenchmark(sizes=[100,300,500,1000],trials=5){
    id:i,pos:V((((i*37)%97)/97-.5)*.8,(((i*53)%89)/89-.5)*.8,(((i*29)%83)/83-.5)*.8),
    vel:V(((i*7)%13)*.012,((i*11)%17)*.01,((i*5)%19)*.009),r:1,sleep:i%11===0,fixed:false
   }));
-  const buildSamples=[],scheduleSamples=[];let final={retainedCandidates:0,scheduledPairs:0,budgetAllocated:0,islandCount:0,maxPairBudget:0};
+  const buildSamples=[],selectionSamples=[],scheduleSamples=[];
+  let final={retainedCandidates:0,candidatePool:0,bodyCoverage:0,candidateIslands:0,scheduledPairs:0,budgetAllocated:0,islandCount:0,maxPairBudget:0};
   for(let trial=0;trial<trials;trial++){
-   const heap=[],visualCache=new Map(),cache=new Map(),t0=performance.now();
+   const perBody=new Map(),visualCache=new Map(),cache=new Map(),t0=performance.now();
    for(let i=0;i<count;i++)for(let j=i+1;j<count;j++){
     const a=bodies[i],b=bodies[j],d=sub(b.pos,a.pos),d2=dot(d,d),rSum=a.r+b.r+2*V14_CONTACT_SKIN;
     if(d2>=rSum*rSum)continue;
     const p=v17BuildCandidate(a,b,d,rSum,d2,visualCache,null,800,600,cache);
-    v17KeepCandidate(heap,p,V17_MAX_CANDIDATES);
+    v17KeepCandidateForBody(perBody,a,p);v17KeepCandidateForBody(perBody,b,p);
    }
-   const t1=performance.now(),pairs=heap.sort(v17PairPrioritySort),plan=v17SchedulePairs(pairs,V17_MAX_NARROW_TESTS),t2=performance.now();
-   buildSamples.push(t1-t0);scheduleSamples.push(t2-t1);
-   final={retainedCandidates:pairs.length,scheduledPairs:plan.scheduled.length,budgetAllocated:plan.allocated,islandCount:plan.islandCount,maxPairBudget:plan.maxPairBudget};
+   const t1=performance.now(),selection=v17SelectDiverseCandidates(perBody,V17_MAX_CANDIDATES),t2=performance.now();
+   const plan=v17SchedulePairs(selection.pairs,V17_MAX_NARROW_TESTS),t3=performance.now();
+   buildSamples.push(t1-t0);selectionSamples.push(t2-t1);scheduleSamples.push(t3-t2);
+   final={retainedCandidates:selection.pairs.length,candidatePool:selection.poolSize,bodyCoverage:selection.bodyCoverage,candidateIslands:selection.islandCount,scheduledPairs:plan.scheduled.length,budgetAllocated:plan.allocated,islandCount:plan.islandCount,maxPairBudget:plan.maxPairBudget};
   }
-  const totalSamples=buildSamples.map((x,i)=>x+scheduleSamples[i]);
+  const totalSamples=buildSamples.map((x,i)=>x+selectionSamples[i]+scheduleSamples[i]);
   reports.push({
-   bodies:count,potentialPairs:count*(count-1)/2,retainedCandidates:final.retainedCandidates,
-   scheduledPairs:final.scheduledPairs,budgetAllocated:final.budgetAllocated,islandCount:final.islandCount,maxPairBudget:final.maxPairBudget,
+   bodies:count,potentialPairs:count*(count-1)/2,candidatePool:final.candidatePool,retainedCandidates:final.retainedCandidates,
+   bodyCoverage:final.bodyCoverage,candidateIslands:final.candidateIslands,scheduledPairs:final.scheduledPairs,
+   budgetAllocated:final.budgetAllocated,islandCount:final.islandCount,maxPairBudget:final.maxPairBudget,
    candidateBuildP95Ms:v17Percentile(buildSamples,.95),candidateBuildP99Ms:v17Percentile(buildSamples,.99),
+   candidateSelectionP95Ms:v17Percentile(selectionSamples,.95),candidateSelectionP99Ms:v17Percentile(selectionSamples,.99),
    schedulerP95Ms:v17Percentile(scheduleSamples,.95),schedulerP99Ms:v17Percentile(scheduleSamples,.99),
    totalP95Ms:v17Percentile(totalSamples,.95),totalP99Ms:v17Percentile(totalSamples,.99),
-   finite:[...buildSamples,...scheduleSamples].every(Number.isFinite)
+   finite:[...buildSamples,...selectionSamples,...scheduleSamples].every(Number.isFinite)
   });
  }
- return {pass:reports.length===sizes.length&&reports.every(r=>r.retainedCandidates<=V17_MAX_CANDIDATES&&r.scheduledPairs<=V17_MAX_NARROW_TESTS&&r.budgetAllocated<=V17_MAX_NARROW_TESTS&&r.maxPairBudget<=V17_MAX_PAIR_TESTS&&r.finite),budgetUnits:'GJK convex-cell tests per simulation step',fixedBudget:V17_MAX_NARROW_TESTS,candidateCap:V17_MAX_CANDIDATES,maxPairBudget:V17_MAX_PAIR_TESTS,trials,reports,interpretation:'Synthetic dense candidate-generation and island-scheduler benchmark. It is not a full rigid-body simulation or browser FPS benchmark.'};
+ return {pass:reports.length===sizes.length&&reports.every(r=>r.retainedCandidates<=V17_MAX_CANDIDATES&&r.candidatePool>=r.retainedCandidates&&r.scheduledPairs<=V17_MAX_NARROW_TESTS&&r.budgetAllocated<=V17_MAX_NARROW_TESTS&&r.maxPairBudget<=V17_MAX_PAIR_TESTS&&r.finite),budgetUnits:'GJK convex-cell tests per simulation step',fixedBudget:V17_MAX_NARROW_TESTS,candidateCap:V17_MAX_CANDIDATES,perBodyCandidateCap:V17_MAX_CANDIDATES_PER_BODY,maxPairBudget:V17_MAX_PAIR_TESTS,trials,reports,interpretation:'Synthetic dense candidate-generation and island-diverse scheduler benchmark. It is not a full rigid-body simulation or browser FPS benchmark.'};
 }
 
 function v15GroundResolve(b,dt,cache=null,frame=0){
@@ -676,19 +703,29 @@ function v17SchedulerTests(){
  const diverse=[make(0,1,9),make(1,2,8),make(10,11,7),make(11,12,6),make(20,21,5),make(21,22,4)];
  const fair=v17SchedulePairs(diverse,3),islandsHit=new Set(fair.scheduled.map(p=>Math.floor(p.a.id/10)));
  const high=v17SchedulePairs([make(100,101,1),make(200,201,20)],1);
- const capped=v17SchedulePairs([make(300,301,3)],1000);
+ const cappedPair=make(300,301,3);cappedPair.visualImportance=1;cappedPair.critical=true;
+ const capped=v17SchedulePairs([cappedPair],1000);
  const heap=[];for(let i=0;i<100;i++)v17KeepCandidate(heap,make(1000+i*2,1001+i*2,i),10);
  const heapPass=heap.length===10&&Math.min(...heap.map(p=>p.score))===90&&Math.max(...heap.map(p=>p.score))===99;
  const cameraState={pos:V(0,0,0),forward:V(0,0,1),right:V(1,0,0),up:V(0,1,0),f:400};
  const visualCache=new Map(),cache=new Map();
- const nearA={id:500,pos:V(0,0,5),vel:V(0,0,0),r:1,sleep:false,fixed:false},nearB={id:501,pos:V(0,0,6.5),vel:V(0,0,0),r:1,sleep:false,fixed:false};
- const farA={id:600,pos:V(100,0,5),vel:V(0,0,0),r:1,sleep:false,fixed:false},farB={id:601,pos:V(100,0,6.5),vel:V(0,0,0),r:1,sleep:false,fixed:false};
- const visible=v17BuildCandidate(nearA,nearB,sub(nearB.pos,nearA.pos),2,2.25,visualCache,cameraState,800,600,cache);
- const offscreen=v17BuildCandidate(farA,farB,sub(farB.pos,farA.pos),2,2.25,visualCache,cameraState,800,600,cache);
+ const nearA={id:500,pos:V(0,0,5),vel:V(0,0,0),r:1,sleep:false,fixed:false},nearB={id:501,pos:V(0,0,6.9),vel:V(0,0,0),r:1,sleep:false,fixed:false};
+ const farA={id:600,pos:V(100,0,5),vel:V(0,0,0),r:1,sleep:false,fixed:false},farB={id:601,pos:V(100,0,6.9),vel:V(0,0,0),r:1,sleep:false,fixed:false};
+ const visible=v17BuildCandidate(nearA,nearB,sub(nearB.pos,nearA.pos),2,3.61,visualCache,cameraState,800,600,cache);
+ const offscreen=v17BuildCandidate(farA,farB,sub(farB.pos,farA.pos),2,3.61,visualCache,cameraState,800,600,cache);
+ const visibleCap=v17PairTestCap(visible),offscreenCap=v17PairTestCap(offscreen);
+ const candidateBodyMap=new Map(),candidateBody=id=>{if(!bodies.has(id))bodies.set(id,{id,pos:V(),vel:V(),r:1,sleep:false,fixed:false});return bodies.get(id);};
+ const highHub=candidateBody(8000),lowHub=candidateBody(9000);
+ for(let i=0;i<40;i++){const p={a:highHub,b:candidateBody(8100+i),score:40-i,visualImportance:.5,budget:0};v17KeepCandidateForBody(candidateBodyMap,p.a,p);v17KeepCandidateForBody(candidateBodyMap,p.b,p);}
+ for(let i=0;i<4;i++){const p={a:lowHub,b:candidateBody(9100+i),score:1-i*.1,visualImportance:.5,budget:0};v17KeepCandidateForBody(candidateBodyMap,p.a,p);v17KeepCandidateForBody(candidateBodyMap,p.b,p);}
+ const candidateSelection=v17SelectDiverseCandidates(candidateBodyMap,10);
+ const lowSelected=candidateSelection.pairs.filter(p=>p.a.id===9000||p.b.id===9000).length;
+ const highSelected=candidateSelection.pairs.length-lowSelected;
+ const candidateDiversity=lowSelected>0&&highSelected>0&&candidateSelection.pairs.length===10;
  const deterministicA=v17SchedulePairs(diverse.map(p=>({...p,budget:0})),4),deterministicB=v17SchedulePairs(diverse.map(p=>({...p,budget:0})),4);
  const deterministic=JSON.stringify(deterministicA.scheduled.map(p=>[p.a.id,p.b.id,p.budget]))===JSON.stringify(deterministicB.scheduled.map(p=>[p.a.id,p.b.id,p.budget]));
- const pass=fair.allocated===3&&islandsHit.size===3&&high.scheduled[0]?.score===20&&capped.allocated===V17_MAX_PAIR_TESTS&&heapPass&&visible.visualImportance>offscreen.visualImportance&&deterministic&&fair.allocated<=fair.budget&&capped.allocated<=capped.budget;
- return {pass,diversity:{islandsHit:islandsHit.size,scheduledPairs:fair.scheduled.length},priority:{selectedScore:high.scheduled[0]?.score},pairCap:capped.maxPairBudget,heap:{pass:heapPass,retained:heap.length,minScore:Math.min(...heap.map(p=>p.score)),maxScore:Math.max(...heap.map(p=>p.score))},visual:{visible:visible.visualImportance,offscreen:offscreen.visualImportance,visiblePriority:visible.score,offscreenPriority:offscreen.score},deterministic,budgetHardCap:fair.allocated<=fair.budget&&capped.allocated<=capped.budget};
+ const pass=fair.allocated===3&&islandsHit.size===3&&high.scheduled[0]?.score===20&&capped.allocated===V17_MAX_PAIR_TESTS&&heapPass&&visible.visualImportance>offscreen.visualImportance&&visibleCap>offscreenCap&&candidateDiversity&&deterministic&&fair.allocated<=fair.budget&&capped.allocated<=capped.budget;
+ return {pass,diversity:{islandsHit:islandsHit.size,scheduledPairs:fair.scheduled.length},candidateDiversity:{selected:candidateSelection.pairs.length,highIslandPairs:highSelected,lowIslandPairs:lowSelected,poolSize:candidateSelection.poolSize},priority:{selectedScore:high.scheduled[0]?.score},pairCap:{critical:capped.maxPairBudget,visible:visibleCap,offscreen:offscreenCap},heap:{pass:heapPass,retained:heap.length,minScore:Math.min(...heap.map(p=>p.score)),maxScore:Math.max(...heap.map(p=>p.score))},visual:{visible:visible.visualImportance,offscreen:offscreen.visualImportance,visiblePriority:visible.score,offscreenPriority:offscreen.score},deterministic,budgetHardCap:fair.allocated<=fair.budget&&capped.allocated<=capped.budget};
 }
 function v17WakeEventTests(){
  const oldMap=islandByBody,oldState=v17WakeState;
@@ -756,7 +793,7 @@ function step(dt){
  const grid=new Map(),cellSize=1.8,key=(x,y,z)=>x+','+y+','+z;
  const eligible=snapshot.filter(b=>b.age>=.32);
  let broadphaseCellVisits=0,broadphaseCandidates=0,checks=0,gjkTests=0,epaIterations=0,epaFallbacks=0,largeBodyFallbacks=0,narrowphaseTests=0,contactPoints=0,frictionImpulse=0,budgetFallbacks=0;
- const worldCellCache=new Map(),contacts=[],candidateHeap=[],visualCache=new Map();
+ const worldCellCache=new Map(),contacts=[],perBodyCandidateHeaps=new Map(),visualCache=new Map();
  for(const b of eligible){
   const r=b.r+V14_CONTACT_SKIN,min=b.pos.map(x=>Math.floor((x-r)/cellSize)),max=b.pos.map(x=>Math.floor((x+r)/cellSize));
   for(let x=min[0];x<=max[0];x++)for(let y=min[1];y<=max[1];y++)for(let z=min[2];z<=max[2];z++){const k=key(x,y,z);let bucket=grid.get(k);if(!bucket)grid.set(k,bucket=[]);bucket.push(b);}
@@ -772,11 +809,11 @@ function step(dt){
     const d=sub(b.pos,a.pos),rSum=a.r+b.r+2*V14_CONTACT_SKIN,d2=dot(d,d);if(d2>=rSum*rSum)continue;
     broadphaseCandidates++;checks++;
     const pair=v17BuildCandidate(a,b,d,rSum,d2,visualCache,cam,W,H,v16ContactCache);
-    v17KeepCandidate(candidateHeap,pair,V17_MAX_CANDIDATES);
+    v17KeepCandidateForBody(perBodyCandidateHeaps,a,pair);v17KeepCandidateForBody(perBodyCandidateHeaps,b,pair);
    }
   }
  }
- const pairs=candidateHeap.sort(v17PairPrioritySort),schedulerStart=performance.now();
+ const candidateSelection=v17SelectDiverseCandidates(perBodyCandidateHeaps,V17_MAX_CANDIDATES),pairs=candidateSelection.pairs,schedulerStart=performance.now();
  const schedule=v17SchedulePairs(pairs,V17_MAX_NARROW_TESTS),schedulerMs=performance.now()-schedulerStart;
  const narrowStart=performance.now();let v17BudgetFallbacks=0,v17DeferredFallbacks=0;
  const solvePair=(pair,manifold)=>{
@@ -807,7 +844,7 @@ function step(dt){
  stats.collisionChecks=checks;stats.broadphaseCandidates=broadphaseCandidates;stats.broadphaseCellVisits=broadphaseCellVisits;
  stats.gjkTests=gjkTests;stats.epaIterations=epaIterations;stats.epaFallbacks=epaFallbacks;stats.largeBodyFallbacks=largeBodyFallbacks;stats.narrowphaseTests=narrowphaseTests;
  stats.contactPoints=contactPoints+groundContactPoints;stats.frictionImpulse=frictionImpulse+groundFrictionImpulse;stats.budgetFallbacks=budgetFallbacks;stats.collisionBudget=V17_MAX_NARROW_TESTS;stats.narrowphaseMs=narrowphaseMs;stats.warmStartHits=warmStartHits;stats.warmStartApplied=warmStartApplied;stats.solverContacts=solverContacts;stats.solverIterations=solverIterations;stats.avgSolverIterations=solverContacts?solverIterations/solverContacts:0;stats.warmStartCachePairs=v16ContactCache.size;
- stats.v17CandidatesKept=pairs.length;stats.v17CandidatesDropped=Math.max(0,broadphaseCandidates-pairs.length);stats.v17ScheduledPairs=schedule.scheduled.length;stats.v17DeferredPairs=schedule.deferred.length;stats.v17BudgetAllocated=schedule.allocated;stats.v17BudgetUsed=gjkTests;stats.v17Islands=schedule.islandCount;stats.v17SchedulerMs=schedulerMs;stats.v17BudgetFallbacks=v17BudgetFallbacks;stats.v17DeferredFallbacks=v17DeferredFallbacks;stats.v17WakeEvents=v17WakeState.events;stats.v17WokenBodies=v17WakeState.bodies;stats.v17SleepingIslands=stats.sleepingIslands||0;
+ stats.v17CandidatePool=candidateSelection.poolSize;stats.v17BodyCoverage=candidateSelection.bodyCoverage;stats.v17CandidateIslands=candidateSelection.islandCount;stats.v17CandidatesKept=pairs.length;stats.v17CandidatesDropped=Math.max(0,broadphaseCandidates-pairs.length);stats.v17ScheduledPairs=schedule.scheduled.length;stats.v17DeferredPairs=schedule.deferred.length;stats.v17BudgetAllocated=schedule.allocated;stats.v17BudgetUsed=gjkTests;stats.v17Islands=schedule.islandCount;stats.v17SchedulerMs=schedulerMs;stats.v17BudgetFallbacks=v17BudgetFallbacks;stats.v17DeferredFallbacks=v17DeferredFallbacks;stats.v17WakeEvents=v17WakeState.events;stats.v17WokenBodies=v17WakeState.bodies;stats.v17SleepingIslands=stats.sleepingIslands||0;
  const stepMs=performance.now()-start;v17StepSamples.push(stepMs);if(v17StepSamples.length>240)v17StepSamples.shift();stats.solve+=stepMs;
  fillStep(dt);
  if(specimen==='single'&&HOLLOW[objectShape])for(const b of bodies)if(!b.fixed&&b.pos[1]-b.r<.001){const y=floorMin(b);if(y<0){b.pos[1]-=y;if(b.vel[1]<0)b.vel[1]=0;}}
@@ -822,7 +859,7 @@ let pointer=null;C.addEventListener('contextmenu',e=>e.preventDefault());C.addEv
 for(let [k,m] of Object.entries(M)){let b=document.createElement('button');b.className='mat'+(k===material?' active':'');b.innerHTML=`<span class="swatch" style="background:${m.swatch}"></span>${m.name}`;b.dataset.material=k;b.onclick=()=>{material=k;objectShape='auto';$('objectShape').value='auto';specimen='single';$('specimen').value='single';document.querySelectorAll('.mat').forEach(x=>x.classList.toggle('active',x===b));reset()};$('materials').append(b)}$('objectShape').onchange=()=>{objectShape=$('objectShape').value;if(HOLLOW[objectShape])material=HOLLOW[objectShape].mat;specimen='single';$('specimen').value='single';document.querySelectorAll('.mat').forEach(x=>x.classList.toggle('active',x.dataset.material===material));reset()};for(let [k,name] of Object.entries({hammer:'重锤',cut:'切割',pulse:'冲击球'})){let b=document.createElement('button');b.textContent=name;b.dataset.tool=k;b.className=k===tool?'active':'';b.onclick=()=>{tool=k;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b))};$('tools').append(b)}$('force').oninput=()=>{$('forceValue').textContent=$('force').value};$('detail').oninput=()=>{$('detailValue').textContent=$('detail').value};$('reset').onclick=reset;$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'继续':'暂停'};$('burst').onclick=()=>{let b=bodies.reduce((a,b)=>b.mass>a.mass?b:a),c=b.cells.reduce((a,c)=>len(sub(c.center,b.center))<len(sub(a.center,b.center))?c:a),p=world(b,c.center);impact(b,c,p,+$('force').value/7,V(0,-.25,-1))};
 function exportData(){return {specimen,fill:fillReport(),graphics:gpuRenderer?gpuRenderer.report():{backend:'Canvas2D'},version:'AFG Shatter V0.17',material,objectShape,shapeKind:objectShape==='auto'?M[material].shape:objectShape,settings:{seed:+$('seed').value,detail:+$('detail').value,force:+$('force').value,secondary:$('secondary').checked},stats:{...stats},mass:{initial:initialMass,current:cells.reduce((s,c)=>s+c.mass,0)},energyError:stats.input-stats.energy-stats.spill,counts:{bodies:bodies.length,cells:cells.length,activeEdges:edges.filter(e=>!e.broken).length},events,frameSamplesMs:frameHist.slice()}}$('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(exportData(),null,2)],{type:'application/json'}));a.download='afg-experiment.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 window.AFG={report:exportData,select:k=>{$('specimen').value=k;$('specimen').dispatchEvent(new Event('change'))},selectShape:k=>{$('objectShape').value=k;objectShape=k;if(HOLLOW[k])material=HOLLOW[k].mat;document.querySelectorAll('.mat').forEach(x=>x.classList.toggle('active',x.dataset.material===material));$('specimen').value='single';specimen='single';if($('zenSample'))$('zenSample').value='shape:'+k;reset()},hitPanel:(axis,sign,u,v,E=20,layer=0)=>{let c=cells.find(c=>c.panel===panelKey(axis,sign,u,v)&&c.layer===layer);if(!c)return false;return impact(c.body,c,world(c.body,c.center),E,V(0,-1,0))},fillState:()=>fill.map(p=>({id:p.id,pos:p.pos.slice(),kind:p.kind,released:p.released,mass:p.mass})),reset,step:(n=1)=>{for(let i=0;i<n;i++){stats.solve=0;fillStats.solveMs=0;step(1/120);updateFX(1/120);gpuRenderer?.advance(1/120)}},burst:()=>$('burst').click(),check:()=>({mass:Math.abs(cells.reduce((s,c)=>s+c.mass,0)-initialMass),energy:Math.abs(stats.input-stats.energy-stats.spill),owned:cells.every(c=>bodies.includes(c.body)&&c.body.cells.includes(c)),unique:new Set(bodies.flatMap(b=>b.cells)).size===cells.length,connected:bodies.every(b=>components(b).length===1),caps:bodies.length<=MAX_BODIES&&cells.length<=MAX_CELLS,finite:bodies.every(b=>[...b.pos,...b.vel,...b.q].every(Number.isFinite))})};
-window.AFG.v17SchedulerTests=v17SchedulerTests;window.AFG.v17ScaleBenchmark=v17ScaleBenchmark;window.AFG.v17Report=()=>({version:'AFG V0.17',budget:{candidateCap:V17_MAX_CANDIDATES,gjkTestsPerStep:V17_MAX_NARROW_TESTS,maxTestsPerPair:V17_MAX_PAIR_TESTS},stats:{...stats},wake:{...v17WakeState},stepP95Ms:v17Percentile(v17StepSamples,.95),stepP99Ms:v17Percentile(v17StepSamples,.99),frameP95Ms:v17Percentile(frameHist,.95),frameP99Ms:v17Percentile(frameHist,.99)});window.AFG.v17SchedulerTests=v17SchedulerTests;window.AFG.v17WakeEventTests=v17WakeEventTests;window.AFG.v16WarmStartTests=v16WarmStartTests;window.AFG.v16IterationPolicyTests=v16IterationPolicyTests;window.AFG.v16RestingContactBenchmark=v16RestingContactBenchmark;window.AFG.v16PhysicsReport=()=>({version:'AFG V0.16',cachePairs:v16ContactCache.size,step:v16StepSerial,stats:{...stats},budget:{...v15BudgetState}});window.AFG.v15MaterialTests=v15MaterialTests;window.AFG.v15BodyManifoldTests=v15BodyManifoldTests;window.AFG.v15ManifoldTests=v15ManifoldTests;window.AFG.v15GroundTests=v15GroundTests;window.AFG.v15BudgetTests=v15BudgetTests;window.AFG.v15PhysicsReport=()=>({version:'AFG V0.16',budget:{...v15BudgetState},stats:{...stats},bodies:bodies.length,cells:cells.length,contactPairs:stats.contactPairs||0,contactPoints:stats.contactPoints||0,frictionImpulse:stats.frictionImpulse||0});window.AFG.v15RunPairSimulation=()=>{const r=v14RunPairSimulation();r.version='AFG V0.15';return r;};window.AFG.v15RunStackSimulation=()=>{const r=v14RunStackSimulation();r.version='AFG V0.15';return r;};window.AFG.v14CollisionTests=v14CollisionTests;AFG.v14IslandTests=v14IslandTests;AFG.v14RunPairSimulation=v14RunPairSimulation;AFG.v14RunStackSimulation=v14RunStackSimulation;AFG.v14PhysicsReport=()=>({version:'AFG V0.14',stats:{...stats},bodies:bodies.length,bodyCellCounts:bodies.map(b=>b.cells.length),contactSkin:V14_CONTACT_SKIN,islands:stats.islands||0,sleepingBodies:stats.sleepingBodies||0});
+window.AFG.v17SchedulerTests=v17SchedulerTests;window.AFG.v17ScaleBenchmark=v17ScaleBenchmark;window.AFG.v17Report=()=>({version:'AFG V0.17',budget:{candidateCap:V17_MAX_CANDIDATES,perBodyCandidateCap:V17_MAX_CANDIDATES_PER_BODY,gjkTestsPerStep:V17_MAX_NARROW_TESTS,maxTestsPerPair:V17_MAX_PAIR_TESTS},stats:{...stats},wake:{...v17WakeState},stepP95Ms:v17Percentile(v17StepSamples,.95),stepP99Ms:v17Percentile(v17StepSamples,.99),frameP95Ms:v17Percentile(frameHist,.95),frameP99Ms:v17Percentile(frameHist,.99)});window.AFG.v17SchedulerTests=v17SchedulerTests;window.AFG.v17WakeEventTests=v17WakeEventTests;window.AFG.v16WarmStartTests=v16WarmStartTests;window.AFG.v16IterationPolicyTests=v16IterationPolicyTests;window.AFG.v16RestingContactBenchmark=v16RestingContactBenchmark;window.AFG.v16PhysicsReport=()=>({version:'AFG V0.16',cachePairs:v16ContactCache.size,step:v16StepSerial,stats:{...stats},budget:{...v15BudgetState}});window.AFG.v15MaterialTests=v15MaterialTests;window.AFG.v15BodyManifoldTests=v15BodyManifoldTests;window.AFG.v15ManifoldTests=v15ManifoldTests;window.AFG.v15GroundTests=v15GroundTests;window.AFG.v15BudgetTests=v15BudgetTests;window.AFG.v15PhysicsReport=()=>({version:'AFG V0.16',budget:{...v15BudgetState},stats:{...stats},bodies:bodies.length,cells:cells.length,contactPairs:stats.contactPairs||0,contactPoints:stats.contactPoints||0,frictionImpulse:stats.frictionImpulse||0});window.AFG.v15RunPairSimulation=()=>{const r=v14RunPairSimulation();r.version='AFG V0.15';return r;};window.AFG.v15RunStackSimulation=()=>{const r=v14RunStackSimulation();r.version='AFG V0.15';return r;};window.AFG.v14CollisionTests=v14CollisionTests;AFG.v14IslandTests=v14IslandTests;AFG.v14RunPairSimulation=v14RunPairSimulation;AFG.v14RunStackSimulation=v14RunStackSimulation;AFG.v14PhysicsReport=()=>({version:'AFG V0.14',stats:{...stats},bodies:bodies.length,bodyCellCounts:bodies.map(b=>b.cells.length),contactSkin:V14_CONTACT_SKIN,islands:stats.islands||0,sleepingBodies:stats.sleepingBodies||0});
 AFG.runAlgorithmDiagnostics=()=>({
  version:'AFG V0.15',
  bodies:bodies.length,cells:cells.length,bonds:edges.length,

@@ -1,9 +1,3 @@
-# Optional browser acceptance tests
+# V0.15 算法测试
 
-The page exposes repeatable browser-side tests:
-- `AFG.v14CollisionTests()`
-- `AFG.v14IslandTests()`
-- `AFG.v14RunPairSimulation()`
-- `AFG.v14RunStackSimulation()`
-
-Recorded Chromium headless results are summarized in `VALIDATION.md`. The Windows `start.bat` does not require Python or Node.
+本仓库的算法验收结果记录在 VALIDATION.md。测试基于从页面源码抽取的物理函数和确定性 stub；不启动完整浏览器页面，不能替代实机验收。

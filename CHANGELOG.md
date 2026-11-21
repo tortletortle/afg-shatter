@@ -1,11 +1,10 @@
 # Changelog
 
-## V0.14 — Convex Collision & Contact Islands
-- Added GJK convex intersection tests and EPA penetration/contact estimation.
-- Added per-cell convex support maps and cell-pair bounding-sphere pruning.
-- Added 0.011 per-shape support contact skin and low-speed zero-restitution handling.
-- Added approximate angular impulse response using scalar spherical inertia.
-- Added persistent contact-island graph, island-wide sleeping and wake propagation.
-- Added telemetry for GJK, EPA, fallback paths, contact pairs, islands and sleeping bodies.
-- Preserved V0.13 broadphase, V0.12 hollow specimens and existing UI.
-- No claim of full FEM, exact arbitrary-convex manifold response, PBF accuracy or GPU performance.
+## V0.15 — Multi-point Contact & Friction Solver
+- Add reference/incident face clipping after GJK/EPA to build multi-point contact manifolds.
+- Add six-iteration sequential impulses with accumulated normal and Coulomb friction impulses.
+- Add rolling resistance and multi-point ground contact resolution.
+- Add material-specific toughness, friction and rolling tuning; retain cap as compatibility alias.
+- Add EWMA-driven adaptive GJK cell-pair budget and conservative sphere fallback.
+- Add telemetry for contact points, friction impulse, adaptive budget and budget fallbacks.
+- Preserve V0.14 GJK/EPA and contact-island behavior.

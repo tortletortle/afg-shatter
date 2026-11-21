@@ -1,0 +1,69 @@
+{
+  "version": "AFG Shatter V0.15",
+  "environment": {
+    "runtime": "Node.js 22.16",
+    "method": "Extracted physics functions in deterministic stub harness",
+    "browserSmokeTest": "not completed; Playwright navigation blocked by administrator policy"
+  },
+  "results": {
+    "materialProperties": {
+      "allSevenPresent": true,
+      "capToughnessAliasesMatch": true
+    },
+    "convexRegression": {
+      "passed": 9,
+      "total": 9,
+      "randomOBBCases": 500,
+      "satMismatches": 0,
+      "epaDepthMismatches": 0,
+      "legacySphereFalseNegatives": 40
+    },
+    "contactManifold": {
+      "singleConvexPairPoints": 4,
+      "multiCellPairs": 4,
+      "rawPoints": 16,
+      "selectedPoints": 4
+    },
+    "friction": {
+      "tangentVelocityBefore": 1,
+      "tangentVelocityAfter": 0.7203015305,
+      "angularSpeedBefore": 2,
+      "angularSpeedAfter": 0.0188040222
+    },
+    "ground": {
+      "tangentVelocityBefore": 1,
+      "tangentVelocityAfter": 0.8900002142,
+      "angularSpeedBefore": 0.25,
+      "angularSpeedAfter": 1.8200747e-7,
+      "floorMin": 0
+    },
+    "adaptiveBudget": {
+      "highLoad": {
+        "from": 900,
+        "to": 756
+      },
+      "lowLoad": {
+        "from": 900,
+        "to": 963
+      }
+    },
+    "simulations": {
+      "pair600Steps": {
+        "finite": true,
+        "sleepingBodies": 2
+      },
+      "stack720Steps": {
+        "finite": true,
+        "connected": true,
+        "islands": 1,
+        "sleepingBodies": 1,
+        "floorMin": 0
+      }
+    }
+  },
+  "notes": [
+    "Material coefficients are gameplay tuning values, not measured material constants.",
+    "V0.14 README reported 16 legacy sphere misses; current embedded test reproduces 40.",
+    "No overall frame-time improvement percentage is claimed."
+  ]
+}
